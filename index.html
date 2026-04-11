@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AirPods Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Barlow:wght@100&family=Anton&family=Caveat:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- FONDO ANIMADO -->
+<div class="background" aria-hidden="true">
+  <svg viewBox="0 0 1440 900" preserveAspectRatio="none">
+    <path d="M120,0 C90,220 160,450 120,900"  class="line l1"/>
+    <path d="M240,0 C290,200 180,430 240,900"  class="line l2"/>
+    <path d="M360,0 C310,250 420,420 360,900"  class="line l3"/>
+    <path d="M480,0 C540,210 400,440 480,900"  class="line l4"/>
+    <path d="M600,0 C570,230 640,410 590,900"  class="line l5"/>
+    <path d="M720,0 C780,220 660,460 720,900"  class="line l6"/>
+    <path d="M840,0 C810,240 880,420 840,900"  class="line l7"/>
+    <path d="M960,0 C1020,210 900,450 960,900" class="line l8"/>
+    <path d="M1080,0 C1050,230 1120,410 1080,900" class="line l9"/>
+    <path d="M1200,0 C1260,220 1140,460 1200,900" class="line l10"/>
+    <path d="M1320,0 C1290,250 1360,430 1320,900" class="line l11"/>
+  </svg>
+</div>
+
+<!-- NAVBAR -->
+<header class="nav" role="banner">
+  <div class="nav-logo">
+    <svg width="22" height="22" viewBox="0 0 814 1000" fill="currentColor">
+      <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663 0 541.8c0-207.3 135.3-316.9 269.3-316.9 35.2 0 66.5 26.3 113.5 26.3 45.5 0 80.7-26.3 121.3-26.3 35.2 0 130.3 5.8 195.8 81.4zm-219.9-126.9c22.7-30.3 36.5-72.5 36.5-114.7 0-5.8-.6-11.6-1.9-16.5-35.2 1.3-77.4 23.3-103.1 56.5-20.7 25.7-37.1 67.9-37.1 110.1 0 6.4.6 12.8 1.3 15.5 2.6.6 5.2.6 7.7.6 31.5 0 71.4-21.5 96.6-51.5z"/>
+    </svg>
+  </div>
+  <nav class="nav-center" aria-label="Navegación principal">
+    <a href="#hero">Inicio</a>
+    <a href="#productos">Productos</a>
+    <a href="#contacto">Contacto</a>
+  </nav>
+  <div class="nav-right">
+    <button class="icon-btn" aria-label="Cuenta">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
+    </button>
+    <button class="icon-btn cart-trigger" aria-label="Carrito">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.2 14h9.5c.8 0 1.5-.5 1.7-1.2l3-7H6.2L5.3 3H1v2h3l3.6 7.6-1.3 2.4c-.1.2-.2.5-.2.8 0 1.1.9 2 2 2h12v-2H8.4c-.1 0-.2-.1-.2-.2l.03-.12L9.1 14z"/></svg>
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- HERO PRINCIPAL -->
+<main class="hero" id="hero">
+  <div class="hero-lines" aria-hidden="true">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="none">
+      <path d="M120,0 C90,220 160,450 120,900"  class="line l1"/>
+      <path d="M240,0 C290,200 180,430 240,900"  class="line l2"/>
+      <path d="M360,0 C310,250 420,420 360,900"  class="line l3"/>
+      <path d="M480,0 C540,210 400,440 480,900"  class="line l4"/>
+      <path d="M600,0 C570,230 640,410 590,900"  class="line l5"/>
+      <path d="M720,0 C780,220 660,460 720,900"  class="line l6"/>
+      <path d="M840,0 C810,240 880,420 840,900"  class="line l7"/>
+      <path d="M960,0 C1020,210 900,450 960,900" class="line l8"/>
+      <path d="M1080,0 C1050,230 1120,410 1080,900" class="line l9"/>
+      <path d="M1200,0 C1260,220 1140,460 1200,900" class="line l10"/>
+      <path d="M1320,0 C1290,250 1360,430 1320,900" class="line l11"/>
+    </svg>
+  </div>
+  <div class="bg-text-wrap">
+    <div class="bg-text-perspective">
+      <span class="bg-text" id="bgText">AIRPODS PRO 2</span>
+      <div class="bg-text-blue-wrap" id="bgTextBlueWrap">
+        <span class="bg-text bg-text-blue" id="bgTextBlue">AIRPODS PRO 2</span>
+        <span class="bg-text bg-text-zoom" id="bgTextZoom">AIRPODS PRO 2</span>
+      </div>
+    </div>
+  </div>
+  <button class="arrow-btn arrow-prev" id="prevBtn" aria-label="Producto anterior">
+    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+  </button>
+  <div class="product-stage">
+    <div class="product-wrap" id="productWrap">
+      <img src="images/airpods.png" class="product" id="productImg" alt="AirPods Pro 2">
+    </div>
+  </div>
+  <button class="arrow-btn arrow-next" id="nextBtn" aria-label="Siguiente producto">
+    <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+  </button>
+  <div class="price-block">
+    <div class="price-mask">
+      <div class="price-inner" id="priceInner">
+        <span class="price-label">Precio</span>
+        <span class="price" id="productPrice">$25.000</span>
+      </div>
+    </div>
+  </div>
+  <button class="liquid-btn" id="addToCart" aria-label="Agregar al carrito">
+    <span class="btn-inner">
+      <span class="btn-text">Add to cart</span>
+      <svg class="cart-icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.2 14h9.5c.8 0 1.5-.5 1.7-1.2l3-7H6.2L5.3 3H1v2h3l3.6 7.6-1.3 2.4c-.1.2-.2.5-.2.8 0 1.1.9 2 2 2h12v-2H8.4c-.1 0-.2-.1-.2-.2l.03-.12L9.1 14z"/></svg>
+    </span>
+    <span class="btn-success">
+      <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      Agregado
+    </span>
+  </button>
+  <div class="dots" id="dots" role="tablist" aria-label="Selector de producto"></div>
+</main>
+
+<!-- ══ CINTAS CRUZADAS ══ -->
+<div class="xtape-wrap">
+  <div class="xtape xtape-a">
+    <div class="xtape-track">
+      <span>Precios Mayoristas</span><span class="xtd">·</span>
+      <span>Envío 24–48 hrs</span><span class="xtd">·</span>
+      <span>Stock Disponible</span><span class="xtd">·</span>
+      <span>Desde 3 Unidades</span><span class="xtd">·</span>
+      <span>Todo Chile</span><span class="xtd">·</span>
+      <span>AirPods · Apple Watch · Cargadores</span><span class="xtd">·</span>
+      <span>Precios Mayoristas</span><span class="xtd">·</span>
+      <span>Envío 24–48 hrs</span><span class="xtd">·</span>
+      <span>Stock Disponible</span><span class="xtd">·</span>
+      <span>Desde 3 Unidades</span><span class="xtd">·</span>
+      <span>Todo Chile</span><span class="xtd">·</span>
+      <span>AirPods · Apple Watch · Cargadores</span><span class="xtd">·</span>
+      <span>Precios Mayoristas</span><span class="xtd">·</span>
+      <span>Envío 24–48 hrs</span><span class="xtd">·</span>
+      <span>Stock Disponible</span><span class="xtd">·</span>
+      <span>Desde 3 Unidades</span><span class="xtd">·</span>
+      <span>Todo Chile</span><span class="xtd">·</span>
+      <span>AirPods · Apple Watch · Cargadores</span><span class="xtd">·</span>
+      <span>Precios Mayoristas</span><span class="xtd">·</span>
+      <span>Envío 24–48 hrs</span><span class="xtd">·</span>
+      <span>Stock Disponible</span><span class="xtd">·</span>
+      <span>Desde 3 Unidades</span><span class="xtd">·</span>
+      <span>Todo Chile</span><span class="xtd">·</span>
+      <span>AirPods · Apple Watch · Cargadores</span><span class="xtd">·</span>
+    </div>
+  </div>
+  <div class="xtape xtape-b">
+    <div class="xtape-track xtape-rev">
+      <span>Distribución Mayorista</span><span class="xtd">·</span>
+      <span>Calidad Garantizada</span><span class="xtd">·</span>
+      <span>Pago Seguro</span><span class="xtd">·</span>
+      <span>Envío Express</span><span class="xtd">·</span>
+      <span>+500 Clientes</span><span class="xtd">·</span>
+      <span>Apple Oficial</span><span class="xtd">·</span>
+      <span>Distribución Mayorista</span><span class="xtd">·</span>
+      <span>Calidad Garantizada</span><span class="xtd">·</span>
+      <span>Pago Seguro</span><span class="xtd">·</span>
+      <span>Envío Express</span><span class="xtd">·</span>
+      <span>+500 Clientes</span><span class="xtd">·</span>
+      <span>Apple Oficial</span><span class="xtd">·</span>
+      <span>Distribución Mayorista</span><span class="xtd">·</span>
+      <span>Calidad Garantizada</span><span class="xtd">·</span>
+      <span>Pago Seguro</span><span class="xtd">·</span>
+      <span>Envío Express</span><span class="xtd">·</span>
+      <span>+500 Clientes</span><span class="xtd">·</span>
+      <span>Apple Oficial</span><span class="xtd">·</span>
+      <span>Distribución Mayorista</span><span class="xtd">·</span>
+      <span>Calidad Garantizada</span><span class="xtd">·</span>
+      <span>Pago Seguro</span><span class="xtd">·</span>
+      <span>Envío Express</span><span class="xtd">·</span>
+      <span>+500 Clientes</span><span class="xtd">·</span>
+      <span>Apple Oficial</span><span class="xtd">·</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DESTACADOS ══ -->
+<section class="csl-section">
+  <div class="csl-title-wrap">
+    <h2 class="csl-title">PRODUCTOS<br>DESTACADOS</h2>
+    <svg class="csl-stroke" viewBox="0 0 560 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <clipPath id="textReveal">
+          <rect id="revealRect" x="0" y="0" width="0" height="90"/>
+        </clipPath>
+      </defs>
+      <text x="12" y="68" font-family="Caveat, cursive" font-size="64" font-weight="700" fill="#0071e3" clip-path="url(#textReveal)">Top del mercado</text>
+    </svg>
+  </div>
+
+  <div class="swiper csl-swiper">
+    <div class="swiper-wrapper">
+
+      <div class="swiper-slide csl-slide" data-name="AirPods Max" data-price="26990" data-raw="26990" data-img-scale="0.75" data-desc="Accesorios magnéticos premium compatibles con MagSafe.">
+        <div class="csl-corner"><svg width="31" height="31" viewBox="0 0 31 31" fill="none"><g opacity="0.35"><mask id="m1" fill="white"><path d="M30.6 1L1.6 0L0.7 29L29.7 30L30.6 1Z"/></mask><path d="M30.6 1L30.65 -0.47L32.2 -0.42L32.15 1.09L30.6 1ZM30.55 2.55L1.6 1.59L1.7 -1.43L30.65 -0.47L30.55 2.55ZM28.17 29.98L29.13 0.99L32.15 1.09L31.19 30.08L28.17 29.98Z" fill="white" mask="url(#m1)"/></g></svg></div>
+        <span class="csl-tag">Más vendido</span>
+        <div class="csl-img"><img src="images/airpodsmax.png" alt="AirPods Max"></div>
+        <h3 class="csl-name">AirPods Max</h3>
+        <span class="csl-price">$26.990</span>
+        <button class="csl-rect">Ver más</button>
+      </div>
+
+      <div class="swiper-slide csl-slide" data-name="AirPods Pro 2" data-price="14000" data-raw="14000" data-img-scale="0.95" data-desc="Cancelación activa de ruido de siguiente nivel, audio espacial personalizado y hasta 30 horas de batería.">
+        <div class="csl-corner"><svg width="31" height="31" viewBox="0 0 31 31" fill="none"><g opacity="0.35"><mask id="m2" fill="white"><path d="M30.6 1L1.6 0L0.7 29L29.7 30L30.6 1Z"/></mask><path d="M30.6 1L30.65 -0.47L32.2 -0.42L32.15 1.09L30.6 1ZM30.55 2.55L1.6 1.59L1.7 -1.43L30.65 -0.47L30.55 2.55ZM28.17 29.98L29.13 0.99L32.15 1.09L31.19 30.08L28.17 29.98Z" fill="white" mask="url(#m2)"/></g></svg></div>
+        <span class="csl-tag">Nuevo</span>
+        <div class="csl-img"><img src="images/airpods2unidad.png" alt="AirPods Pro 2"></div>
+        <h3 class="csl-name">AirPods Pro 2</h3>
+        <span class="csl-price">$14.000</span>
+        <button class="csl-rect">Ver más</button>
+      </div>
+
+      <div class="swiper-slide csl-slide" data-name="AirPods 4ta Generación" data-price="15000" data-raw="15000" data-img-scale="0.75" data-desc="Audio adaptativo de siguiente nivel con cancelación activa de ruido y hasta 30 horas de batería.">
+        <div class="csl-corner"><svg width="31" height="31" viewBox="0 0 31 31" fill="none"><g opacity="0.35"><mask id="m3" fill="white"><path d="M30.6 1L1.6 0L0.7 29L29.7 30L30.6 1Z"/></mask><path d="M30.6 1L30.65 -0.47L32.2 -0.42L32.15 1.09L30.6 1ZM30.55 2.55L1.6 1.59L1.7 -1.43L30.65 -0.47L30.55 2.55ZM28.17 29.98L29.13 0.99L32.15 1.09L31.19 30.08L28.17 29.98Z" fill="white" mask="url(#m3)"/></g></svg></div>
+        <span class="csl-tag">Mas Rentable</span>
+        <div class="csl-img"><img src="images/airpods-4ta-generacion-v2.png" alt="AirPods 4"></div>
+        <h3 class="csl-name">AirPods 4</h3>
+        <span class="csl-price">$15.000</span>
+        <button class="csl-rect">Ver más</button>
+      </div>
+
+      <div class="swiper-slide csl-slide" data-name="Apple Watch Serie 10" data-price="29990" data-raw="29990" data-img-scale="0.75" data-desc="El Apple Watch más delgado hasta la fecha. Pantalla OLED más grande, detección de apnea del sueño y carga rápida.">
+        <div class="csl-corner"><svg width="31" height="31" viewBox="0 0 31 31" fill="none"><g opacity="0.35"><mask id="m4" fill="white"><path d="M30.6 1L1.6 0L0.7 29L29.7 30L30.6 1Z"/></mask><path d="M30.6 1L30.65 -0.47L32.2 -0.42L32.15 1.09L30.6 1ZM30.55 2.55L1.6 1.59L1.7 -1.43L30.65 -0.47L30.55 2.55ZM28.17 29.98L29.13 0.99L32.15 1.09L31.19 30.08L28.17 29.98Z" fill="white" mask="url(#m4)"/></g></svg></div>
+        <span class="csl-tag">The new Apple</span>
+        <div class="csl-img"><img src="images/serie10desta.png" alt="Series 10"></div>
+        <h3 class="csl-name">Series 10</h3>
+        <span class="csl-price">$29.990</span>
+        <button class="csl-rect">Ver más</button>
+      </div>
+
+      <div class="swiper-slide csl-slide" data-name="Apple Watch Ultra 3" data-price="29990" data-raw="29990" data-img-scale="0.75" data-desc="El Apple Watch más resistente. Titanio de grado aeroespacial, pantalla Always-On de 49mm y hasta 60 horas de batería.">
+        <div class="csl-corner"><svg width="31" height="31" viewBox="0 0 31 31" fill="none"><g opacity="0.35"><mask id="m5" fill="white"><path d="M30.6 1L1.6 0L0.7 29L29.7 30L30.6 1Z"/></mask><path d="M30.6 1L30.65 -0.47L32.2 -0.42L32.15 1.09L30.6 1ZM30.55 2.55L1.6 1.59L1.7 -1.43L30.65 -0.47L30.55 2.55ZM28.17 29.98L29.13 0.99L32.15 1.09L31.19 30.08L28.17 29.98Z" fill="white" mask="url(#m5)"/></g></svg></div>
+        <span class="csl-tag">Mejor Calificado</span>
+        <div class="csl-img"><img src="images/apple-watch-ultra-3.png" alt="Ultra 3"></div>
+        <h3 class="csl-name">Ultra 3</h3>
+        <span class="csl-price">$29.990</span>
+        <button class="csl-rect">Ver más</button>
+      </div>
+
+    </div>
+    <div class="csl-arr-prev swiper-button-prev"></div>
+    <div class="csl-arr-next swiper-button-next"></div>
+    <div class="swiper-pagination csl-pagination"></div>
+  </div>
+</section>
+
+<!-- ══ SECCIÓN PRODUCTOS ══ -->
+<section id="productos">
+  <div class="productos-header">
+    <p class="productos-subtitulo">Catálogo Mayor 2026</p>
+    <h2 class="productos-titulo">Productos</h2>
+    <div class="productos-badge">Desde 3 unidades combinables</div>
+  </div>
+  <div class="productos-grid" id="productosGrid">
+
+    <div class="product-card" data-name="Apple Watch Ultra 3" data-price="29990" data-raw="29990" data-img-scale="0.75" data-desc="El Apple Watch más resistente. Titanio de grado aeroespacial, pantalla Always-On de 49mm y hasta 60 horas de batería.">
+      <div class="card-img-wrap"><img src="images/apple-watch-ultra-3.png" alt="Apple Watch Ultra 3" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+      <div class="card-info"><p class="card-name">Apple Watch Ultra 3</p><p class="card-price">$29.990 <span class="card-unit">c/u</span></p><button class="card-btn">Ver más</button></div>
+    </div>
+
+    <div class="product-card" data-name="Apple Watch Serie 10" data-price="29990" data-raw="29990" data-img-scale="0.75" data-desc="El Apple Watch más delgado hasta la fecha. Pantalla OLED más grande, detección de apnea del sueño y carga rápida.">
+      <div class="card-img-wrap"><img src="images/serie-10.png" alt="Apple Watch Serie 10" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+      <div class="card-info"><p class="card-name">Apple Watch Serie 10</p><p class="card-price">$29.990 <span class="card-unit">c/u</span></p><button class="card-btn">Ver más</button></div>
+    </div>
+
+    <div class="product-card" data-name="Apple Watch Black Ultra 2" data-price="29990" data-raw="29990" data-img-scale="0.75" data-desc="Edición Black del Ultra 2. Acabado en negro carbón, titanio negro y cristal de zafiro. Máxima resistencia y estilo.">
+      <div class="card-img-wrap"><img src="images/black-ultra-2.png" alt="Apple Watch Black Ultra 2" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+      <div class="card-info"><p class="card-name">Apple Watch Black Ultra 2</p><p class="card-price">$29.990 <span class="card-unit">c/u</span></p><button class="card-btn">Ver más</button></div>
+    </div>
+
+    <div class="product-card" data-name="AirPods 4ta Generación" data-price="15000" data-raw="15000" data-img-scale="0.75" data-desc="Diseño completamente rediseñado, audio adaptativo y cancelación activa de ruido. La mejor experiencia sin cables.">
+      <div class="card-img-wrap"><img src="images/airpods-4gen.png" alt="AirPods 4ta Generación" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+      <div class="card-info"><p class="card-name">AirPods 4ta Generación</p><p class="card-price">$15.000 <span class="card-unit">c/u</span></p><button class="card-btn">Ver más</button></div>
+    </div>
+
+    <div class="product-card" data-name="AirPods Pro 2" data-price="14000" data-raw="14000" data-img-scale="0.75" data-desc="Cancelación activa de ruido de siguiente nivel, audio espacial personalizado y hasta 30 horas de batería con el estuche.">
+      <div class="card-img-wrap"><img src="images/airpods-pro-2.png" alt="AirPods Pro 2" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+      <div class="card-info"><p class="card-name">AirPods Pro 2</p><p class="card-price">$14.000 <span class="card-unit">c/u</span></p><button class="card-btn">Ver más</button></div>
+    </div>
+
+    <div class="product-card" data-name="AirPods 3ra Generación" data-price="14000" data-raw="14000" data-img-scale="0.75" data-desc="Audio espacial, audio adaptativo y resistencia al agua IPX4. Diseño rediseñado y cómodo para uso diario.">
+      <div class="card-img-wrap"><img src="images/airpods-3gen.png" alt="AirPods 3ra Generación" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+      <div class="card-info"><p class="card-name">AirPods 3ra Generación</p><p class="card-price">$14.000 <span class="card-unit">c/u</span></p><button class="card-btn">Ver más</button></div>
+    </div>
+
+    <div class="product-card" data-name="Batería MagSafe" data-price="13000" data-raw="13000" data-img-scale="0.75" data-desc="Batería externa magnética para iPhone. Se adhiere perfectamente y carga de forma inalámbrica sin cables. Compacta y ligera.">
+      <div class="card-img-wrap"><img src="images/bateria-magsafe.png" alt="Batería MagSafe" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+      <div class="card-info"><p class="card-name">Batería MagSafe</p><p class="card-price">$13.000 <span class="card-unit">c/u</span></p><button class="card-btn">Ver más</button></div>
+    </div>
+
+    <div class="product-card" data-name="Max Magnéticos" data-price="26990" data-raw="26990" data-img-scale="0.75" data-desc="Accesorios magnéticos premium compatibles con MagSafe. Fijación perfecta y carga inalámbrica optimizada.">
+      <div class="card-img-wrap"><img src="images/max-magneticos.png" alt="Max Magnéticos" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+      <div class="card-info"><p class="card-name">Max Magnéticos</p><p class="card-price">$26.990 <span class="card-unit">c/u</span></p><button class="card-btn">Ver más</button></div>
+    </div>
+
+    <div class="product-card" data-name="Cargador Lightning Completo" data-price="5000" data-raw="5000" data-img-scale="0.75" data-desc="Cargador completo con cable Lightning y adaptador de corriente. Compatible con iPhone, iPad y AirPods.">
+      <div class="card-img-wrap"><img src="images/cargador-lightning.png" alt="Cargador Lightning" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+      <div class="card-info"><p class="card-name">Cargador Completo Lightning</p><p class="card-price">$5.000 <span class="card-unit">c/u</span></p><button class="card-btn">Ver más</button></div>
+    </div>
+
+    <div class="product-card" data-name="Cargador Tipo C Completo" data-price="5000" data-raw="5000" data-img-scale="0.75" data-desc="Cargador completo con cable USB-C. Compatible con iPhone 15 en adelante, iPad Pro y MacBook. Carga rápida.">
+      <div class="card-img-wrap"><img src="images/cargador-tipo-c.png" alt="Cargador Tipo C" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+      <div class="card-info"><p class="card-name">Cargador Completo Tipo C</p><p class="card-price">$5.000 <span class="card-unit">c/u</span></p><button class="card-btn">Ver más</button></div>
+    </div>
+
+    <div class="product-card" data-name="Cargador Samsung 45W" data-price="6000" data-raw="6000" data-img-scale="0.75" data-desc="Cargador ultra rápido Samsung 45W. Compatible con toda la línea Galaxy. Carga completa en menos de una hora.">
+      <div class="card-img-wrap"><img src="images/cargador-samsung-45w.png" alt="Cargador Samsung 45W" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+      <div class="card-info"><p class="card-name">Cargador Samsung 45W</p><p class="card-price">$6.000 <span class="card-unit">c/u</span></p><button class="card-btn">Ver más</button></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ ¿POR QUÉ ELEGIRNOS? ══ -->
+<section id="por-que" class="porque-section">
+  <div class="porque-inner">
+    <div class="porque-header">
+      <p class="productos-subtitulo">Nuestra diferencia</p>
+      <h2 class="productos-titulo">¿Por qué elegirnos?</h2>
+    </div>
+
+    <div class="porque-grid">
+
+      <!-- CARD 1 -->
+      <div class="porque-card">
+        <div class="porque-card-inner">
+          <div class="porque-card-front">
+            <div class="porque-icon">
+              <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+            </div>
+          </div>
+          
+          <div class="porque-card-back">
+            <h3 class="porque-title">Precios Competitivos</h3>
+            <p class="porque-desc">Los mejores precios del mercado para que puedas revender con margen real. Desde 3 unidades ya accedés a precios especiales.</p>
+          </div>
+        </div>
+      </div>
+      
+
+      <!-- CARD 2 -->
+      <div class="porque-card">
+        <div class="porque-card-inner">
+          <div class="porque-card-front">
+            <div class="porque-icon">
+              <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+            </div>
+          </div>
+          <div class="porque-card-back">
+            <h3 class="porque-title">Envío Rápido</h3>
+            <p class="porque-desc">Despacho en 24–48 horas a todo Chile. Coordinamos retiro en punto de entrega o directo a domicilio según tu preferencia.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 3 -->
+      <div class="porque-card">
+        <div class="porque-card-inner">
+          <div class="porque-card-front">
+            <div class="porque-icon">
+              <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+            </div>
+          </div>
+          <div class="porque-card-back">
+            <h3 class="porque-title">Stock Disponible</h3>
+            <p class="porque-desc">Variedad de productos y cantidad suficiente para tu negocio. Consultanos por disponibilidad y te confirmamos al instante.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 4 -->
+      <div class="porque-card">
+        <div class="porque-card-inner">
+          <div class="porque-card-front">
+            <div class="porque-icon">
+              <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+            </div>
+          </div>
+          <div class="porque-card-back">
+            <h3 class="porque-title">Atención Directa</h3>
+            <p class="porque-desc">Comunicación directa por WhatsApp sin intermediarios. Respondemos rápido y coordinamos tu pedido de forma simple.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ CONTACTO ══ -->
+<section id="contacto" class="contacto-section">
+  <div class="contacto-inner">
+    <div class="contacto-header">
+      <p class="productos-subtitulo">Estamos para ayudarte</p>
+      <h2 class="productos-titulo">Contacto</h2>
+    </div>
+    <div class="contacto-grid">
+      <div class="contacto-info">
+        <div class="contacto-item">
+          <div class="contacto-icon">
+            <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </div>
+          <div>
+            <p class="contacto-label">WhatsApp</p>
+            <p class="contacto-value">+56 9 4234 8587</p>
+          </div>
+        </div>
+        <div class="contacto-item">
+          <div class="contacto-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          </div>
+          <div>
+            <p class="contacto-label">Zona de despacho</p>
+            <p class="contacto-value">Todo Chile</p>
+          </div>
+        </div>
+        <div class="contacto-item">
+          <div class="contacto-icon">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z"/></svg>
+          </div>
+          <div>
+            <p class="contacto-label">Horario de atención</p>
+            <p class="contacto-value">Lun – Sáb, 9:00 – 20:00</p>
+          </div>
+        </div>
+      </div>
+      <div class="contacto-cta">
+        <p class="contacto-cta-text">¿Listo para hacer tu pedido? Escríbenos directo por WhatsApp y te respondemos al instante.</p>
+        <a class="contacto-wa-btn" href="https://wa.me/56942348587?text=Hola!%20Me%20interesa%20hacer%20un%20pedido" target="_blank">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Escribir por WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <svg width="20" height="20" viewBox="0 0 814 1000" fill="currentColor">
+        <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663 0 541.8c0-207.3 135.3-316.9 269.3-316.9 35.2 0 66.5 26.3 113.5 26.3 45.5 0 80.7-26.3 121.3-26.3 35.2 0 130.3 5.8 195.8 81.4zm-219.9-126.9c22.7-30.3 36.5-72.5 36.5-114.7 0-5.8-.6-11.6-1.9-16.5-35.2 1.3-77.4 23.3-103.1 56.5-20.7 25.7-37.1 67.9-37.1 110.1 0 6.4.6 12.8 1.3 15.5 2.6.6 5.2.6 7.7.6 31.5 0 71.4-21.5 96.6-51.5z"/>
+      </svg>
+      <span>AirPods Store</span>
+    </div>
+    <nav class="footer-nav">
+      <a href="#hero">Inicio</a>
+      <a href="#productos">Productos</a>
+      <a href="#por-que">¿Por qué elegirnos?</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <p class="footer-copy">© 2026 AirPods Store. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+<div class="ppage-overlay" id="ppageOverlay"></div>
+<div class="ppage" id="ppage">
+  <div class="ppage-aura" id="ppageAura"></div>
+  <button class="ppage-back" id="ppageBack" aria-label="Volver">
+    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    Volver
+  </button>
+  <div class="ppage-img-panel" id="ppageImgPanel">
+    <div class="ppage-img-bg"></div>
+    <div class="ppage-thumbs" id="ppageThumbs"></div>
+    <div class="ppage-img-wrap" id="ppageImgWrap">
+      <img class="ppage-img" id="ppageImg" src="" alt="">
+    </div>
+    <button class="ppage-img-next" id="ppageImgNext" aria-label="Siguiente vista">
+      <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+    </button>
+    <div class="ppage-img-dots" id="ppageImgDots"></div>
+  </div>
+  <div class="ppage-info" id="ppageInfo">
+    <p class="ppage-name" id="ppageName"></p>
+    <p class="ppage-desc" id="ppageDesc"></p>
+    <div id="ppageTierWrap">
+      <p class="ppage-tier-label">Precio</p>
+      <div class="ppage-tier-selected" id="ppageTierSelected">
+        <div class="tier-lines" aria-hidden="true">
+          <svg viewBox="0 0 400 60" preserveAspectRatio="none">
+            <path d="M30,0 C25,15 35,45 30,60" class="tl tl1"/>
+            <path d="M65,0 C72,20 58,40 65,60" class="tl tl2"/>
+            <path d="M100,0 C93,18 107,42 100,60" class="tl tl3"/>
+            <path d="M135,0 C142,22 128,38 135,60" class="tl tl4"/>
+            <path d="M170,0 C163,16 177,44 170,60" class="tl tl5"/>
+            <path d="M205,0 C212,20 198,40 205,60" class="tl tl1"/>
+            <path d="M240,0 C233,18 247,42 240,60" class="tl tl2"/>
+            <path d="M275,0 C282,22 268,38 275,60" class="tl tl3"/>
+            <path d="M310,0 C303,16 317,44 310,60" class="tl tl4"/>
+            <path d="M345,0 C352,20 338,40 345,60" class="tl tl5"/>
+            <path d="M380,0 C373,18 387,42 380,60" class="tl tl1"/>
+          </svg>
+        </div>
+        <span class="ppage-tier-selected-text" id="ppageTierSelectedText">1 unidad</span>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="ppage-tier-selected-price" id="ppageTierSelectedPrice"></span>
+          <div class="ppage-tier-chevron" id="ppageTierChevron">
+            <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="ppage-tiers-list" id="ppageTiersList">
+        <div id="ppagePricesTable"></div>
+      </div>
+    </div>
+    <div id="ppageActionsWrap">
+      <div class="ppage-actions">
+        <div class="ppage-total-row">
+          <span class="ppage-total-label-sm">Total</span>
+          <div class="ppage-qty">
+            <button class="ppage-qty-btn" id="ppageQtyMinus">−</button>
+            <span class="ppage-qty-num" id="ppageQtyNum">1</span>
+            <button class="ppage-qty-btn" id="ppageQtyPlus">+</button>
+          </div>
+          <span class="ppage-total-amount" id="ppageTotal"></span>
+        </div>
+        <button class="ppage-cart-btn" id="ppageCartBtn">
+          <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.2 14h9.5c.8 0 1.5-.5 1.7-1.2l3-7H6.2L5.3 3H1v2h3l3.6 7.6-1.3 2.4c-.1.2-.2.5-.2.8 0 1.1.9 2 2 2h12v-2H8.4c-.1 0-.2-.1-.2-.2l.03-.12L9.1 14z"/></svg>
+          Agregar al carrito
+        </button>
+        <button class="ppage-wa-btn" id="ppageWaBtn">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Consultar
+        </button>
+      </div>
+    </div>
+    <div id="ppageAccordions">
+      <div class="ppage-accordion">
+        <div class="ppage-accordion-header" id="ppage-features-header">
+          <span class="ppage-accordion-title">Características</span>
+          <div class="ppage-accordion-chevron" id="ppage-features-chev"><svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
+        </div>
+        <div class="ppage-accordion-body" id="ppage-features-body">
+          <div class="ppage-accordion-inner" id="ppage-features-inner"></div>
+        </div>
+      </div>
+      <div class="ppage-accordion">
+        <div class="ppage-accordion-header" id="ppage-delivery-header">
+          <span class="ppage-accordion-title">Envío y entrega</span>
+          <div class="ppage-accordion-chevron" id="ppage-delivery-chev"><svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
+        </div>
+        <div class="ppage-accordion-body" id="ppage-delivery-body">
+          <div class="ppage-accordion-inner">
+            <div class="ppage-delivery-row">
+              <p>Despacho a domicilio</p>
+              <div class="ppage-delivery-badge">Recibelo en 24–48 hrs</div>
+            </div>
+            <p style="margin-top:10px;font-size:13px;color:var(--gray-mid)">Retiro en punto de entrega disponible. Coordinamos por WhatsApp.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CARRITO -->
+<aside class="cart-drawer" id="cartDrawer" aria-label="Carrito de compras">
+  <div class="cart-header">
+    <h2>Carrito</h2>
+    <button class="close-btn" id="closeCart" aria-label="Cerrar carrito">
+      <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </button>
+  </div>
+  <div class="cart-items" id="cartItems"><p class="cart-empty">Tu carrito está vacío</p></div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-total"><span>Total</span><span id="cartTotal">$0</span></div>
+    <button class="checkout-btn" id="checkoutBtn">
+      <svg style="width:18px;height:18px;fill:currentColor;vertical-align:middle;margin-right:8px" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Consultar por WhatsApp
+    </button>
+  </div>
+</aside>
+<div class="cart-overlay" id="cartOverlay"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
