@@ -419,38 +419,69 @@ body {
 .price-row-qty { font-size:14px; font-weight:500; color:var(--black); min-width:120px; }
 .price-row-amount { font-family:var(--font-display); font-size:20px; color:var(--black); flex:1; text-align:center; }
 .price-row-save { font-size:11px; font-weight:600; color:#30D158; min-width:50px; text-align:right; }
-.ppage-actions { display:flex; align-items:center; gap:10px; width:100%; }
+.ppage-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
 
-/* ── Botones de acción del modal — todos negros, hover con color ── */
-.ppage-cart-btn,
+.ppage-total-row {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 20px; border-radius: 14px;
+  background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.06);
+  width: 100%;
+}
+.ppage-total-label-sm { font-size:13px; font-weight:500; color:var(--gray-mid); }
+.ppage-qty { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.8); border:1px solid rgba(0,0,0,0.08); border-radius:999px; padding:8px 16px; }
+.ppage-qty-btn { width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,0.07); font-size:18px; line-height:1; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background 0.2s, transform 0.15s var(--ease-spring); }
+.ppage-qty-btn:hover { background:rgba(0,0,0,0.14); transform:scale(1.1); }
+.ppage-qty-num { font-size:18px; font-weight:700; min-width:24px; text-align:center; font-variant-numeric:tabular-nums; }
+.ppage-total-amount { font-family:var(--font-display); font-size:32px; letter-spacing:0.01em; color:var(--black); line-height:1; }
+
+.ppage-btns-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Botón carrito — solo ícono, cuadrado */
+.ppage-cart-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 52px; height: 52px; min-width: 52px;
+  border-radius: 14px; background: var(--black);
+  cursor: pointer; border: none; flex-shrink: 0;
+  transition: background 0.3s ease, transform 0.2s var(--ease-spring);
+}
+.ppage-cart-btn svg { width: 18px; height: 18px; fill: var(--white); }
+.ppage-cart-btn:hover { background: #333; transform: scale(1.05); }
+
+/* Botones con texto — crecen igual */
 .ppage-wa-btn,
 .ppage-mp-btn {
-  flex:1;
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  padding:16px 12px; border-radius:14px;
-  background:var(--black); color:var(--white);
-  font-family:var(--font-body); font-size:14px; font-weight:500;
-  cursor:pointer; white-space:nowrap; border:none;
+  flex: 1;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: 52px; border-radius: 14px;
+  background: var(--black); color: var(--white);
+  font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  cursor: pointer; white-space: nowrap; border: none;
   transition: background 0.35s cubic-bezier(0.16,1,0.3,1),
               transform  0.2s  var(--ease-spring),
               box-shadow 0.35s cubic-bezier(0.16,1,0.3,1);
 }
-.ppage-cart-btn svg,
 .ppage-wa-btn svg,
-.ppage-mp-btn svg { width:15px; height:15px; fill:var(--white); flex-shrink:0; }
-
-.ppage-cart-btn:hover { background:#333; transform:scale(1.02); }
+.ppage-mp-btn svg { width: 15px; height: 15px; fill: var(--white); flex-shrink: 0; }
 
 .ppage-wa-btn:hover {
-  background:#25D366;
-  box-shadow:0 8px 24px rgba(37,211,102,0.35);
-  transform:scale(1.02);
+  background: #25D366;
+  box-shadow: 0 8px 24px rgba(37,211,102,0.35);
+  transform: scale(1.02);
 }
-
 .ppage-mp-btn:hover {
-  background:#009ee3;
-  box-shadow:0 8px 24px rgba(0,158,227,0.35);
-  transform:scale(1.02);
+  background: #009ee3;
+  box-shadow: 0 8px 24px rgba(0,158,227,0.35);
+  transform: scale(1.02);
 }
 .ppage-accordion { border-top:1px solid rgba(0,0,0,0.07); }
 .ppage-accordion-header { display:flex; align-items:center; justify-content:space-between; padding:16px 0; cursor:pointer; user-select:none; }
