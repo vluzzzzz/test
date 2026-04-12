@@ -479,9 +479,13 @@ const ProductModal = (() => {
     thumb.addEventListener('click',()=>goToImg(fromIndex));
   }
 
+  let isAnimatingImg = false;
+
   function goToImg(newIndex){
     if(newIndex===imgIndex) return;
-    if(isTemp) return; /* en modo temp la flecha no hace nada */
+    if(isTemp) return;
+    if(isAnimatingImg) return;
+    if(newIndex < 0 || newIndex >= imgList.length) return;
     const imgEl=document.getElementById('ppageImg');
     const imgWrap=document.getElementById('ppageImgWrap');
     const direction=newIndex>imgIndex?1:-1;
@@ -492,11 +496,12 @@ const ProductModal = (() => {
     preloader.src = imgList[newIndex];
 
     function doTransition(){
+      isAnimatingImg = true;
       if(direction>0){
         addThumb(prevSrc,prevIndex);
       } else {
         const wrap=document.getElementById('ppageThumbs');
-        wrap.querySelectorAll('.ppage-thumb').forEach(thumb=>{
+        if(wrap) wrap.querySelectorAll('.ppage-thumb').forEach(thumb=>{
           if(Number(thumb.dataset.index)>=newIndex)
             gsap.to(thumb,{opacity:0,y:20,scale:0.8,duration:0.25,ease:'power2.in',onComplete:()=>thumb.remove()});
         });
@@ -519,9 +524,11 @@ const ProductModal = (() => {
             'cargador-tipo-c-completo': [1,1,1],
             'cargador-samsung-45w':     [1,1,1],
           };
-          const s=(IMG_SCALES[getImgSlug(currentProduct.name)]??[1,1,1])[imgIndex]??1;
-          document.getElementById('ppageImgWrap').style.setProperty('--ppage-img-scale',s);
-          gsap.fromTo(imgWrap,{x:direction>0?80:-80,opacity:0,scale:0.88},{x:0,opacity:1,scale:1,duration:0.45,ease:'power3.out'});
+          const s=(IMG_SCALES[getImgSlug(currentProduct?.name||'')]??[1,1,1])[imgIndex]??1;
+          const iw=document.getElementById('ppageImgWrap');
+          if(iw) iw.style.setProperty('--ppage-img-scale',s);
+          gsap.fromTo(imgWrap,{x:direction>0?80:-80,opacity:0,scale:0.88},{x:0,opacity:1,scale:1,duration:0.45,ease:'power3.out',
+            onComplete:()=>{ isAnimatingImg=false; }});
         }
       });
       renderDots(); updateArrow();
@@ -660,6 +667,7 @@ const ProductModal = (() => {
     overlay.style.opacity='0';
     /* Resetear opacidades y estado temp para la próxima apertura */
     isTemp = false;
+    isAnimatingImg = false;
     const ppageInfo = document.getElementById('ppageInfo');
     if(ppageInfo) ppageInfo.style.opacity = '';
     const pb = document.getElementById('ppageBack');
@@ -764,15 +772,26 @@ const ProductModal = (() => {
     }
 
     const t = document.startViewTransition(() => showModal(card));
-    t.finished.then(() => {
-      clearVTNames(card);
-      /* Restaurar shadow */
-      if(ci && ci._savedFilter !== undefined){
-        ci.style.transition = ci._savedTransition || '';
-        ci.style.filter     = ci._savedFilter;
-        delete ci._savedFilter; delete ci._savedTransition;
-      }
-    });
+    t.finished
+      .then(() => {
+        clearVTNames(card);
+        if(ci && ci._savedFilter !== undefined){
+          ci.style.transition = ci._savedTransition || '';
+          ci.style.filter     = ci._savedFilter;
+          delete ci._savedFilter; delete ci._savedTransition;
+        }
+      })
+      .catch(() => {
+        /* VT cancelada: limpiar y restaurar estado */
+        clearVTNames(card);
+        if(ci && ci._savedFilter !== undefined){
+          ci.style.transition = ci._savedTransition || '';
+          ci.style.filter     = ci._savedFilter;
+          delete ci._savedFilter; delete ci._savedTransition;
+        }
+        card.style.visibility = '';
+        isOpen = false; currentProduct = null; originCard = null;
+      });
   }
 
   /* ─────────────────────────────────────────────
@@ -799,14 +818,15 @@ const ProductModal = (() => {
     /* Ocultar texto del modal ANTES del snapshot → solo imagen y contenedor animan */
     const ppageInfo = document.getElementById('ppageInfo');
     if(ppageInfo) ppageInfo.style.opacity = '0';
-    document.getElementById('ppageBack').style.opacity = '0';
+    const ppageBack = document.getElementById('ppageBack');
+    if(ppageBack) ppageBack.style.opacity = '0';
 
     /* Aplicar border-radius ANTES del snapshot →
        OLD state ya tiene esquinas redondeadas → sin pico durante la transición */
     ppage.style.borderRadius = '20px';
 
-    /* Marcar body para que el CSS sepa que es cierre → fade out del old */
-    document.body.classList.add('vt-closing');
+    /* Marcar documentElement (no body) para que el CSS :root.vt-closing funcione */
+    document.documentElement.classList.add('vt-closing');
 
     /* OLD state: ppage + ppageImg tienen los nombres (visibles antes del callback)
        NEW state: card + cardImg tienen los nombres (seteados dentro de hideModal) */
@@ -814,10 +834,10 @@ const ProductModal = (() => {
     document.getElementById('ppageImg').style.viewTransitionName = 'vt-image';
 
     const t = document.startViewTransition(() => hideModal(targetCard));
-    t.finished.then(() => {
-      clearVTNames(targetCard);
-      document.body.classList.remove('vt-closing');
-    });
+    t.finished
+      .then(() => { clearVTNames(targetCard); })
+      .catch(() => { clearVTNames(targetCard); hideModal(targetCard); })
+      .finally(() => { document.documentElement.classList.remove('vt-closing'); });
   }
 
   /* ── INIT ── */
