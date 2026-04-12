@@ -421,8 +421,8 @@ body {
 .price-row-save { font-size:11px; font-weight:600; color:#30D158; min-width:50px; text-align:right; }
 .ppage-actions {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
   width: 100%;
 }
 
@@ -430,7 +430,7 @@ body {
   display: flex; align-items: center; gap: 16px;
   padding: 14px 20px; border-radius: 14px;
   background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.06);
-  width: 100%;
+  flex: 1;
 }
 .ppage-total-label-sm { font-size:13px; font-weight:500; color:var(--gray-mid); }
 .ppage-qty { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.8); border:1px solid rgba(0,0,0,0.08); border-radius:999px; padding:8px 16px; }
@@ -439,25 +439,19 @@ body {
 .ppage-qty-num { font-size:18px; font-weight:700; min-width:24px; text-align:center; font-variant-numeric:tabular-nums; }
 .ppage-total-amount { font-family:var(--font-display); font-size:32px; letter-spacing:0.01em; color:var(--black); line-height:1; }
 
-.ppage-btns-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-}
-
-/* Botón carrito — solo ícono, cuadrado */
+/* ── Carrito: solo ícono, cuadrado ── */
 .ppage-cart-btn {
   display: flex; align-items: center; justify-content: center;
   width: 52px; height: 52px; min-width: 52px;
-  border-radius: 14px; background: var(--black);
+  border-radius: 14px;
+  background: var(--black); color: var(--white);
   cursor: pointer; border: none; flex-shrink: 0;
-  transition: background 0.3s ease, transform 0.2s var(--ease-spring);
+  transition: background 0.25s ease, transform 0.2s var(--ease-spring);
 }
-.ppage-cart-btn svg { width: 18px; height: 18px; fill: var(--white); }
-.ppage-cart-btn:hover { background: #333; transform: scale(1.05); }
+.ppage-cart-btn svg { width:18px; height:18px; fill:currentColor; transition: fill 0.25s ease; }
+.ppage-cart-btn:hover { background: var(--white); color: var(--black); border: 1.5px solid rgba(0,0,0,0.12); }
 
-/* Botones con texto — crecen igual */
+/* ── WhatsApp y MP: crecen igual ── */
 .ppage-wa-btn,
 .ppage-mp-btn {
   flex: 1;
@@ -471,7 +465,7 @@ body {
               box-shadow 0.35s cubic-bezier(0.16,1,0.3,1);
 }
 .ppage-wa-btn svg,
-.ppage-mp-btn svg { width: 15px; height: 15px; fill: var(--white); flex-shrink: 0; }
+.ppage-mp-btn svg { width:15px; height:15px; fill:var(--white); flex-shrink:0; }
 
 .ppage-wa-btn:hover {
   background: #25D366;
