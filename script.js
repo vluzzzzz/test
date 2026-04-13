@@ -48,8 +48,8 @@ const SLIDE_KEY_MAP = {
    ══════════════════════════════════════════════ */
 const PRODUCT_CONFIG = {
   1: { // ─── AirPods Pro 2 ───────────────────────
-    fontSize:     '24vw',  /* EDIT: tamaño texto de fondo          */
-    productScale: 1.3,     /* EDIT: escala del PNG                 */
+    fontSize:     '22vw',  /* EDIT: tamaño texto de fondo          */
+    productScale: 1.1,     /* EDIT: escala del PNG                 */
     productY:    -15,      /* EDIT: posición vertical px (- = arr) */
     blobYRatio:   0.88,    /* EDIT: altura blob (0=top, 1=bottom)  */
     blobSpeed:    0.030,   /* EDIT: velocidad blob (menor = más lento y suave) */
@@ -63,7 +63,7 @@ const PRODUCT_CONFIG = {
   },
   3: { // ─── AirPods Max ─────────────────────────
     fontSize:     '24vw',  /* EDIT: tamaño texto de fondo          */
-    productScale: 0.9,     /* EDIT: escala del PNG                 */
+    productScale: 1.1,     /* EDIT: escala del PNG                 */
     productY:    -20,      /* EDIT: posición vertical px           */
     blobYRatio:   0.90,    /* EDIT: altura blob                    */
     blobSpeed:    0.030,   /* EDIT: velocidad blob                 */
