@@ -660,43 +660,46 @@ body {
 
 
 /* =============================================
-   GLOBAL FIXES (aplican a todas las pantallas)
+   GLOBAL FIXES
    ============================================= */
 
-/* ── Sandbox global: elimina scroll horizontal en toda la página ── */
-html, body {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-/* ── xtape: las cintas se extienden 140% del ancho — necesitan clip ── */
+/* Sandbox horizontal — elimina scroll derecho en toda la página */
+html, body { max-width: 100%; overflow-x: hidden; }
 .xtape-wrap { overflow: hidden; }
 
-/* ── Prevenir FOUC del ppage (el HTML ya tiene display:none inline,
-   esto es un segundo seguro) ── */
-#ppage:not(.active):not([style*="flex"]) {
-  display: none !important;
-}
+/* ppage oculto por defecto (el HTML ya tiene style="display:none", esto es backup) */
+#ppage { display: none; }
+#ppage.active { display: flex; }
 
-/* ── Overlay sólido ── */
+/* Overlay sólido */
 .ppage-overlay {
   background: #ffffff !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* ── Z-index ── */
-.nav           { z-index: 100; }
+/* Z-index stack */
 .ppage-overlay { z-index: 300 !important; }
 #ppage         { z-index: 301 !important; }
+/* Cart queda por debajo del ppage pero encima de todo lo demás */
+.cart-overlay  { z-index: 199 !important; }
+.cart-drawer   { z-index: 200 !important; }
 
-/* ── Performance: will-change solo en elementos que se animan activamente ── */
-.product-stage  { will-change: transform; }
-.bg-text-perspective { will-change: transform, opacity; }
-.product        { will-change: transform, opacity, filter; }
-
-/* ── Box-sizing reset ppage ── */
+/* Box-sizing reset ppage */
 #ppage, #ppage * { box-sizing: border-box; }
+
+/* =============================================
+   VARIABLES DE AJUSTE MANUAL
+   Editá estos valores para mover pixel a pixel
+   ============================================= */
+:root {
+  /* Imagen del producto en hero */
+  --hero-img-offset-y: -15px;  /* EDIT: subir imagen (-) / bajar (+) */
+
+  /* Texto "Top del mercado" en Productos Destacados */
+  --stroke-top: 42px;           /* EDIT: bajar (+) / subir (-) */
+  --stroke-x: -35%;             /* EDIT: mover izquierda (-) / derecha (+) */
+}
 
 /* =============================================
    ≤ 900px
@@ -715,11 +718,8 @@ html, body {
    ============================================= */
 @media (max-width: 768px) {
 
-  /* ── Performance: content-visibility en secciones below-fold ── */
-  .csl-section, #productos, .porque-section, .contacto-section, .footer {
-    content-visibility: auto;
-    contain-intrinsic-size: 0 600px;
-  }
+  /* ── Líneas de fondo: mostrar 1 de cada 3 para más separación ── */
+  .l2, .l3, .l5, .l6, .l8, .l9, .l10 { display: none; }
 
   /* NAVBAR */
   .nav { padding: 0 20px; height: 56px; }
@@ -730,31 +730,44 @@ html, body {
   .hero { height: 100dvh; min-height: 100dvh; padding: 0; overflow: hidden; }
   .bg-text-wrap { top: 36%; }
 
-  /* Texto de fondo más grande e impactante en mobile */
+  /* Texto de fondo grande — casi llegando a los bordes
+     EDIT font-size para ajustar tamaño */
   .bg-text {
-    font-size: clamp(72px, 19vw, 120px) !important;
+    font-size: clamp(90px, 26vw, 160px) !important;
     letter-spacing: -3px !important;
     transform: rotateX(10deg) scaleY(1.2) scaleX(1.05) !important;
   }
 
-  .product-wrap { width: 270px !important; height: 270px !important; }
+  /* Imagen del producto: centrada + escala máxima 0.9 para no tapar texto
+     EDIT --hero-img-offset-y en :root para subir/bajar la imagen */
+  .product-wrap {
+    width: 270px !important;
+    height: 270px !important;
+    transform: translate(0, var(--hero-img-offset-y)) scale(min(var(--product-scale, 1), 1.3)) !important;
+  }
+
+  /* Flechas */
   .arrow-prev { left: 10px !important; }
   .arrow-next { right: 10px !important; }
   .arrow-btn  { width: 38px !important; height: 38px !important; }
   .arrow-btn svg { width: 17px !important; height: 17px !important; }
+
+  /* Precio */
   .price-block { left: 20px !important; bottom: 144px !important; }
   .price { font-size: 30px !important; }
   .price-label { font-size: 9px !important; }
 
-  /* Botón "Add to Cart" — centrado estricto */
+  /* Botón Add to Cart: padding amplio para que entre todo el texto
+     EDIT el padding-left/right si el texto sigue cortándose */
   .liquid-btn {
     position: absolute !important;
     bottom: 82px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    padding: 17px 44px !important;
+    padding: 18px 72px !important;  /* EDIT el 72px para ajustar ancho */
     font-size: 15px !important;
     white-space: nowrap !important;
+    min-width: 180px !important;
   }
   .liquid-btn:hover  { transform: translateX(-50%) scale(1.04) !important; }
   .liquid-btn:active { transform: translateX(-50%) scale(0.97) !important; }
@@ -766,26 +779,27 @@ html, body {
 
   /* ── DESTACADOS ── */
   .csl-section { padding: 56px 0 72px; }
-
-  /* Título más grande */
   .csl-title {
     font-size: clamp(52px, 13vw, 80px) !important;
     letter-spacing: -2px !important;
   }
   .csl-title-wrap { margin-bottom: 40px; }
 
-  /* Animación "Top del mercado" — mostrar en mobile con tamaño ajustado */
+  /* "Top del mercado" — centrado, usa variables de :root para ajuste manual */
   .csl-stroke {
     display: block !important;
-    width: min(280px, 62vw) !important;
-    height: 60px !important;
-    top: 80px !important;
+    width: min(290px, 65vw) !important;
+    height: 62px !important;
+    top: var(--stroke-top) !important;       /* EDIT --stroke-top en :root */
     left: 50% !important;
-    transform: translate(-38%, -50%) !important;
+    transform: translate(var(--stroke-x), -50%) !important; /* EDIT --stroke-x en :root */
   }
 
-  /* Título de cada card del carrusel — más grande */
-  .csl-name { font-size: clamp(24px, 6vw, 34px) !important; }
+  /* Título de cada card del carrusel más grande */
+  .csl-name {
+    font-size: clamp(26px, 6.5vw, 36px) !important;
+    bottom: 48px !important;
+  }
 
   /* PRODUCTOS */
   #productos { padding: 72px 16px; }
@@ -817,7 +831,7 @@ html, body {
   /* CARRITO */
   .cart-drawer { width: 100% !important; max-width: 100% !important; }
 
-  /* ══ PPAGE — UN SOLO SCROLL ══ */
+  /* ══ PPAGE ══ */
   #ppage {
     position: fixed !important;
     inset: 0 !important;
@@ -836,13 +850,9 @@ html, body {
   #ppage::-webkit-scrollbar { display: none; }
 
   .ppage-img-panel {
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 44dvh !important;
-    min-height: 44dvh !important;
-    flex-shrink: 0 !important;
-    overflow: hidden !important;
-    position: relative !important;
+    width: 100% !important; max-width: 100% !important;
+    height: 44dvh !important; min-height: 44dvh !important;
+    flex-shrink: 0 !important; overflow: hidden !important; position: relative !important;
   }
   .ppage-img-wrap { width: 60% !important; height: 68% !important; margin-left: 20px !important; }
   .ppage-img-next { right: 10px !important; width: 32px !important; height: 32px !important; }
@@ -856,29 +866,21 @@ html, body {
   .ppage-thumb img { width: 80% !important; height: 80% !important; }
 
   .ppage-info {
-    flex: none !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-    overflow-x: hidden !important;
-    padding: 20px 18px 40px !important;
-    gap: 14px !important;
-    justify-content: flex-start !important;
-    box-shadow: none !important;
+    flex: none !important; width: 100% !important; max-width: 100% !important;
+    height: auto !important; max-height: none !important;
+    overflow: visible !important; overflow-x: hidden !important;
+    padding: 20px 18px 40px !important; gap: 14px !important;
+    justify-content: flex-start !important; box-shadow: none !important;
     border-top: 1px solid rgba(0,0,0,0.08) !important;
   }
 
   .ppage-name { font-size: clamp(20px, 5vw, 28px) !important; line-height: 1.15 !important; }
   .ppage-desc { font-size: 13px !important; max-width: 100% !important; line-height: 1.6 !important; }
-
   #ppageTierWrap { width: 100% !important; max-width: 100% !important; }
   .ppage-tier-selected { padding: 13px 14px !important; width: 100% !important; overflow: visible !important; }
   .ppage-tier-selected-text  { font-size: 13px !important; }
   .ppage-tier-selected-price { font-size: 18px !important; }
   .ppage-tier-chevron svg    { width: 15px !important; height: 15px !important; }
-
   .ppage-tiers-list { overflow: hidden !important; }
   .price-row-qty { min-width: 0 !important; }
 
@@ -889,7 +891,6 @@ html, body {
   .ppage-cart-btn svg { width: 17px !important; height: 17px !important; }
   .ppage-wa-btn { flex: 1 !important; min-width: 0 !important; height: 50px !important; font-size: 13px !important; }
   .ppage-mp-btn { flex: 0 0 100% !important; width: 100% !important; height: 50px !important; font-size: 13px !important; }
-
   .ppage-accordion { margin-top: 14px !important; }
   .ppage-accordion-header { padding: 13px 0 !important; }
   .ppage-accordion-title { font-size: 14px !important; }
@@ -897,11 +898,11 @@ html, body {
 
 /* ≤ 430px */
 @media (max-width: 430px) {
-  .bg-text { font-size: clamp(56px, 16vw, 78px) !important; }
+  .bg-text { font-size: clamp(78px, 22vw, 120px) !important; }
   .product-wrap { width: 240px !important; height: 240px !important; }
   .price { font-size: 26px !important; }
   .price-block { bottom: 138px !important; }
-  .liquid-btn { padding: 15px 36px !important; font-size: 14px !important; bottom: 76px !important; }
+  .liquid-btn { padding: 15px 72px !important; font-size: 14px !important; bottom: 76px !important; }
   .dots { bottom: 42px !important; }
   .productos-grid { gap: 10px !important; }
   .card-info { padding: 12px 12px 14px !important; }
@@ -914,6 +915,6 @@ html, body {
   .ppage-total-amount { font-size: 19px !important; }
   .ppage-info { padding: 16px 14px 32px !important; gap: 12px !important; }
   .contacto-cta-text { font-size: 15px !important; }
-  .csl-stroke { width: min(230px, 58vw) !important; top: 68px !important; }
-  .csl-name { font-size: clamp(20px, 5.5vw, 28px) !important; }
+  .csl-stroke { width: min(240px, 58vw) !important; }
+  .csl-name { font-size: clamp(22px, 5.5vw, 30px) !important; }
 }
