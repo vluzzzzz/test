@@ -660,25 +660,22 @@ body {
 
 
 /* =============================================
-   MOBILE — v7 (Aggressive Containment)
+   MOBILE — v8 (Single Scroll)
    ============================================= */
 
-/* ── Box-sizing reset ── */
 #ppage, #ppage * { box-sizing: border-box; }
 
-/* ── Overlay: blanco sólido — no se ve nada del fondo ── */
+/* Overlay sólido blanco */
 .ppage-overlay {
   background: #ffffff !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* ── Z-index stack ── */
 .nav           { z-index: 100; }
 .ppage-overlay { z-index: 300 !important; }
 #ppage         { z-index: 301 !important; }
 
-/* ── ≤ 900px ── */
 @media (max-width: 900px) {
   .nav-center { display: none; }
   .nav { padding: 0 24px; }
@@ -688,15 +685,12 @@ body {
   .porque-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; max-width: 100% !important; }
 }
 
-/* ── ≤ 768px ── */
 @media (max-width: 768px) {
 
-  /* NAVBAR */
   .nav { padding: 0 20px; height: 56px; }
   .nav-logo { left: 20px; }
   .nav-right { right: 20px; gap: 4px; }
 
-  /* HERO */
   .hero { height: 100dvh; min-height: 100dvh; padding: 0; overflow: hidden; }
   .bg-text-wrap { top: 36%; }
   .bg-text { font-size: 72px !important; letter-spacing: -2px !important; transform: rotateX(10deg) scaleY(1.1) scaleX(1.05) !important; }
@@ -739,9 +733,11 @@ body {
   .cart-drawer { width: 100% !important; max-width: 100% !important; }
 
   /* ══════════════════════════════════════════════
-     #ppage — Sandbox estricto (exactamente como
-     pide el prompt: inset:0 + 100vw + 100dvh)
+     #ppage — UN SOLO SCROLL
+     El ppage scrollea todo (imagen + info juntos).
+     ppage-info crece naturalmente sin scroll propio.
      ══════════════════════════════════════════════ */
+
   #ppage {
     position: fixed !important;
     inset: 0 !important;
@@ -750,23 +746,25 @@ body {
     height: 100dvh !important;
     margin: 0 !important;
     padding: 0 !important;
+    /* ÚNICO SCROLL: vertical en el ppage, horizontal bloqueado */
     overflow-x: hidden !important;
-    overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
     flex-direction: column !important;
     border-radius: 0 !important;
   }
 
-  /* Panel imagen */
+  /* Panel imagen: altura fija, no crece ni scrollea */
   .ppage-img-panel {
     width: 100% !important;
     max-width: 100% !important;
     height: 44dvh !important;
-    min-height: unset !important;
+    min-height: 44dvh !important;
     flex-shrink: 0 !important;
     overflow: hidden !important;
     position: relative !important;
   }
+
   .ppage-img-wrap { width: 60% !important; height: 68% !important; margin-left: 20px !important; }
   .ppage-img-next { right: 10px !important; width: 32px !important; height: 32px !important; }
   .ppage-img-next svg { width: 15px !important; height: 15px !important; }
@@ -774,44 +772,44 @@ body {
   .ppage-back { top: 12px !important; left: 12px !important; padding: 6px 12px !important; font-size: 12px !important; z-index: 30 !important; }
   .ppage-back svg { width: 14px !important; height: 14px !important; }
 
-  /* Thumbnails: izquierda, verticales */
   .ppage-thumbs { left: 10px !important; top: 50% !important; transform: translateY(-50%) !important; flex-direction: column !important; gap: 6px !important; position: absolute !important; display: flex !important; }
   .ppage-thumb { width: 38px !important; height: 38px !important; border-radius: 8px !important; }
   .ppage-thumb img { width: 80% !important; height: 80% !important; }
 
-  /* Panel info — Shield interno: solo scroll vertical */
+  /* ── ppage-info: crece con el contenido, SIN scroll propio ──
+     El #ppage es quien scrollea, no este panel. */
   .ppage-info {
-    flex: 1 !important;
-    min-height: 0 !important;
+    flex: none !important;           /* No llena espacio forzado */
     width: 100% !important;
     max-width: 100% !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    padding: 20px 18px 28px !important;
+    height: auto !important;         /* Crece con el contenido */
+    max-height: none !important;
+    overflow: visible !important;    /* Sin scroll box interno */
+    overflow-x: hidden !important;   /* Solo bloquea horizontal */
+    padding: 20px 18px 40px !important;
     gap: 14px !important;
     justify-content: flex-start !important;
     box-shadow: none !important;
     border-top: 1px solid rgba(0,0,0,0.08) !important;
   }
 
-  /* Todos los hijos directos del info: nunca más anchos que el panel */
+  /* Shield: hijos del info no se desbordan horizontalmente */
   .ppage-info > * { max-width: 100% !important; overflow-x: hidden !important; }
 
   .ppage-name { font-size: clamp(20px, 5vw, 28px) !important; line-height: 1.15 !important; }
   .ppage-desc { font-size: 13px !important; max-width: 100% !important; line-height: 1.6 !important; }
 
-  /* Tier selector */
   #ppageTierWrap { width: 100% !important; max-width: 100% !important; overflow-x: hidden !important; }
   .ppage-tier-selected { padding: 13px 14px !important; width: 100% !important; overflow: visible !important; }
   .ppage-tier-selected-text  { font-size: 13px !important; }
   .ppage-tier-selected-price { font-size: 18px !important; }
   .ppage-tier-chevron svg    { width: 15px !important; height: 15px !important; }
 
-  /* Fix px width en price-row-qty detectado en diagnóstico */
-  .price-row-qty { min-width: unset !important; min-width: 0 !important; }
+  /* La lista de tiers se expande y empuja el contenido hacia abajo
+     (el ppage scrollea para mostrar el resto — sin scroll anidado) */
+  .ppage-tiers-list { overflow: hidden !important; }
+  .price-row-qty { min-width: 0 !important; }
 
-  /* Acciones */
   .ppage-actions { display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; gap: 8px !important; width: 100% !important; align-items: stretch !important; }
   .ppage-total-row { flex: 0 0 100% !important; width: 100% !important; padding: 11px 14px !important; gap: 10px !important; }
   .ppage-total-amount { font-size: 22px !important; }
@@ -838,9 +836,22 @@ body {
   .card-price { font-size: 17px !important; }
   .card-btn { padding: 9px !important; font-size: 11px !important; }
   .porque-grid { grid-template-columns: 1fr !important; }
-  .ppage-img-panel { height: 38dvh !important; }
+  .ppage-img-panel { height: 38dvh !important; min-height: 38dvh !important; }
   .ppage-name { font-size: 18px !important; }
   .ppage-total-amount { font-size: 19px !important; }
-  .ppage-info { padding: 16px 14px 24px !important; gap: 12px !important; }
+  .ppage-info { padding: 16px 14px 32px !important; gap: 12px !important; }
   .contacto-cta-text { font-size: 15px !important; }
+}
+
+
+/* Ocultar scrollbar del #ppage en mobile (scroll sigue funcionando) */
+@media (max-width: 768px) {
+  #ppage { scrollbar-width: none; }
+  #ppage::-webkit-scrollbar { display: none; }
+}
+
+/* Eliminar scroll contexts individuales creados por overflow-x:hidden en hijos */
+@media (max-width: 768px) {
+  .ppage-info > * { overflow-x: unset !important; }
+  #ppageTierWrap  { overflow-x: unset !important; }
 }
