@@ -415,13 +415,15 @@ const CartButton = (() => {
 
 /* ══════════════════════════════════════════════
    MÓDULO: MASK REVEAL — blob líquido
-   Mobile: siempre activo, suave, touch-aware
+   Mobile: siempre activo, suave, tap-to-glide
    ══════════════════════════════════════════════ */
 const MaskReveal = (() => {
   const N=64;
-  /* Radios del blob. RY móvil pequeño = solo cubre parte inferior */
+  /* Radios más sutiles — highlight, no splash */
   const RX_DESK=220, RY_DESK=115;
-  const RX_MOB =170, RY_MOB = 52;
+  const RX_MOB =120, RY_MOB = 38;
+  /* Amplitud reducida en mobile (organic wobble más suave) */
+  const AMP_MULT_MOB = 0.45;
 
   function isMob(){ return window.innerWidth <= 768; }
   function rand(){ return Math.random()*Math.PI*2; }
@@ -437,11 +439,10 @@ const MaskReveal = (() => {
 
   let rafId=null, mouseX=0, mouseY=0, blobX=0, blobY=0;
   let isInside=false, scale=0, wrapRect=null, started=false;
-  let touchActive=false; /* si el dedo está tocando el texto */
+  let returnTimer=null;
 
   function cacheRect(){ wrapRect=DOM.bgTextBlueWrap.getBoundingClientRect(); }
 
-  /* Posición base del blob en mobile: parte inferior del texto */
   function getMobileCenter(){
     if (!wrapRect) cacheRect();
     const cur = PRODUCTS[state.current];
@@ -453,22 +454,22 @@ const MaskReveal = (() => {
     };
   }
 
-  /* Velocidad de suavizado — per-producto en mobile, fija en desktop */
   function getLerpFactor(){
     if (!isMob()) return 0.055;
     const cur = PRODUCTS[state.current];
     const cfg = cur ? PRODUCT_CONFIG[cur.id] : null;
-    return cfg ? cfg.blobSpeed : 0.030;
+    return cfg ? cfg.blobSpeed : 0.025;
   }
 
   function buildPolygon(cx,cy,t){
-    const RX = isMob() ? RX_MOB : RX_DESK;
-    const RY = isMob() ? RY_MOB : RY_DESK;
+    const RX  = isMob() ? RX_MOB : RX_DESK;
+    const RY  = isMob() ? RY_MOB : RY_DESK;
+    const amp = isMob() ? AMP_MULT_MOB : 1;
     const pts=[];
     for(let i=0;i<N;i++){
       const angle=(i/N)*Math.PI*2;
-      let dr=0; for(const m of MODES) dr+=m.amp*Math.sin(m.k*angle+m.spd*t+m.ph);
-      let dv=0; for(const m of V_MODES) dv+=m.amp*Math.sin(m.k*angle+m.spd*t+m.ph);
+      let dr=0; for(const m of MODES) dr+=m.amp*amp*Math.sin(m.k*angle+m.spd*t+m.ph);
+      let dv=0; for(const m of V_MODES) dv+=m.amp*amp*Math.sin(m.k*angle+m.spd*t+m.ph);
       const rx=(RX+dr)*scale, ry=(RY+dr*0.38)*scale;
       pts.push(`${(cx+rx*Math.cos(angle)).toFixed(1)}px ${(cy+ry*Math.sin(angle)+dv*scale).toFixed(1)}px`);
     }
@@ -493,23 +494,28 @@ const MaskReveal = (() => {
 
   function startLoop(){ if(!rafId) rafId=requestAnimationFrame(animate); }
 
-  /* Llamado cuando cambia el producto en mobile */
   function refreshMobile(){
     if (!isMob()) return;
     cacheRect();
-    if (!touchActive){
+    if (!isInside){ isInside=true; started=false; }
+    const c=getMobileCenter();
+    mouseX=c.x; mouseY=c.y;
+    startLoop();
+  }
+
+  function scheduleReturn(){
+    /* Vuelve a la posición base después de 1.5s */
+    clearTimeout(returnTimer);
+    returnTimer=setTimeout(()=>{
       const c=getMobileCenter();
       mouseX=c.x; mouseY=c.y;
-    }
-    if (!isInside){ isInside=true; started=false; }
-    startLoop();
+    }, 1500);
   }
 
   function init(){
     document.fonts.ready.then(()=>{
       cacheRect();
       if(isMob()){
-        /* Auto-start en mobile: blob en la parte inferior del texto */
         const c=getMobileCenter();
         mouseX=c.x; mouseY=c.y; blobX=c.x; blobY=c.y;
         isInside=true; started=true;
@@ -524,7 +530,7 @@ const MaskReveal = (() => {
 
     const hero=document.getElementById('hero');
 
-    /* Desktop: seguir mouse */
+    /* ── Desktop: mouse ── */
     hero.addEventListener('mousemove',e=>{
       if(isMob()) return;
       if(!wrapRect) cacheRect();
@@ -536,24 +542,23 @@ const MaskReveal = (() => {
       isInside=false; started=false; startLoop();
     });
 
-    /* Mobile: el dedo mueve el blob, al soltar vuelve a la base */
-    hero.addEventListener('touchmove',e=>{
+    /* ── Mobile: TAP para mover blob (no drag)
+       Todos los listeners son passive:true para NO bloquear scroll ── */
+    hero.addEventListener('touchstart',e=>{
       if(!isMob()) return;
       if(!wrapRect) cacheRect();
-      touchActive=true;
+      clearTimeout(returnTimer);
+      /* Mover el blob hacia el punto del tap */
       const touch=e.touches[0];
       mouseX=touch.clientX;
       mouseY=touch.clientY;
-      /* Asegurarse de que el blob esté activo */
-      if(!isInside){ isInside=true; started=false; startLoop(); }
+      /* El lerp lento (blobSpeed) crea el "glide" elegante */
     },{passive:true});
 
     hero.addEventListener('touchend',()=>{
       if(!isMob()) return;
-      touchActive=false;
-      /* Volver suavemente a la posición base */
-      const c=getMobileCenter();
-      mouseX=c.x; mouseY=c.y;
+      /* Esperar 1.5s y volver suavemente a la base */
+      scheduleReturn();
     },{passive:true});
   }
 
