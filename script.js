@@ -755,10 +755,10 @@ const ProductModal = (() => {
 
     originRect = card.getBoundingClientRect();
 
-    if(!document.startViewTransition){
+    if(!document.startViewTransition || window.innerWidth <= 900){
       const cx=(originRect.left+originRect.width/2)/window.innerWidth*100;
       const cy=(originRect.top+originRect.height/2)/window.innerHeight*100;
-      ppage.style.cssText=`display:flex;position:fixed;inset:0;border-radius:0;overflow:hidden;transform-origin:${cx.toFixed(2)}% ${cy.toFixed(2)}%;`;
+      ppage.style.cssText=`display:flex;flex-direction:column;position:fixed;top:0;right:0;bottom:0;left:0;width:100%;height:100dvh;border-radius:0;overflow:hidden;overflow-x:hidden;overflow-y:hidden;transform-origin:${cx.toFixed(2)}% ${cy.toFixed(2)}%;`;
       document.body.style.overflow='hidden';
       ppage.classList.add('active'); overlay.classList.add('active');
       overlay.style.opacity='0'; card.style.visibility='hidden';
@@ -801,7 +801,7 @@ const ProductModal = (() => {
 
     const targetCard = originCard;
 
-    if(!document.startViewTransition){
+    if(!document.startViewTransition || window.innerWidth <= 900){
       let rect=originRect;
       if(targetCard){ const f=targetCard.getBoundingClientRect(); if(f.width>0) rect=f; }
       const cx=(rect.left+rect.width/2)/window.innerWidth*100;
