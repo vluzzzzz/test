@@ -695,7 +695,9 @@ const ProductModal = (() => {
     document.getElementById('ppageImg').style.viewTransitionName='';
     if(targetCard) targetCard.classList.remove('animating');
     isOpen=false; currentProduct=null; originCard=null;
+    document.documentElement.style.overflow='';
     document.body.style.overflow='';
+    document.body.style.touchAction='';
   }
 
   function open(card){
@@ -758,13 +760,20 @@ const ProductModal = (() => {
     if(!document.startViewTransition || window.innerWidth <= 900){
       const cx=(originRect.left+originRect.width/2)/window.innerWidth*100;
       const cy=(originRect.top+originRect.height/2)/window.innerHeight*100;
-      ppage.style.cssText=`display:flex;flex-direction:column;position:fixed;top:0;right:0;bottom:0;left:0;width:100%;height:100dvh;border-radius:0;overflow:hidden;overflow-x:hidden;overflow-y:hidden;transform-origin:${cx.toFixed(2)}% ${cy.toFixed(2)}%;`;
+      ppage.style.cssText=`display:flex;flex-direction:column;position:fixed;top:0;right:0;bottom:0;left:0;width:100vw;max-width:100vw;height:100dvh;margin:0;padding:0;border-radius:0;overflow:hidden;overflow-x:hidden;overflow-y:hidden;transform-origin:${cx.toFixed(2)}% ${cy.toFixed(2)}%;`;
+      /* Iron-clad scroll lock: html + body + touchAction */
+      document.documentElement.style.overflow='hidden';
       document.body.style.overflow='hidden';
+      document.body.style.touchAction='none';
       ppage.classList.add('active'); overlay.classList.add('active');
       overlay.style.opacity='0'; card.style.visibility='hidden';
       gsap.to(overlay,{opacity:1,duration:0.4,ease:'power2.out'});
       gsap.fromTo(ppage,{scale:0},{scale:1,duration:0.52,ease:'expo.out',
-        onComplete(){ ppage.style.transformOrigin=''; }});
+        onComplete(){
+          /* Limpiar transform residual que puede afectar el layout */
+          ppage.style.transformOrigin='';
+          ppage.style.transform='';
+        }});
       return;
     }
 
