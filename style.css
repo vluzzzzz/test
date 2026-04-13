@@ -660,10 +660,10 @@ body {
 
 
 /* =============================================
-   RESPONSIVE MOBILE — COMPLETO
+   RESPONSIVE MOBILE — v3 (bugfix)
    ============================================= */
 
-/* ── Tablet (≤ 900px): ocultar nav links ── */
+/* ── ≤ 900px: ocultar nav links ── */
 @media (max-width: 900px) {
   .nav-center { display: none; }
   .nav { padding: 0 24px; }
@@ -673,48 +673,31 @@ body {
   .porque-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; max-width: 100% !important; }
 }
 
-/* ── Mobile (≤ 768px) ── */
+/* ── ≤ 768px ── */
 @media (max-width: 768px) {
 
-  /* ─ NAVBAR ─ */
+  /* NAVBAR */
   .nav { padding: 0 20px; height: 56px; }
   .nav-logo { left: 20px; }
   .nav-right { right: 20px; gap: 4px; }
   .nav-center { display: none; }
 
-  /* ─ HERO ─ */
-  .hero {
-    height: 100svh;
-    min-height: 100svh;
-    padding: 0;
-    overflow: hidden;
-  }
-
+  /* HERO */
+  .hero { height: 100dvh; min-height: 100dvh; padding: 0; overflow: hidden; }
   .bg-text-wrap { top: 36%; }
-
   .bg-text {
     font-size: 72px !important;
     letter-spacing: -2px !important;
     transform: rotateX(10deg) scaleY(1.1) scaleX(1.05) !important;
   }
-
-  .product-wrap {
-    width: 270px !important;
-    height: 270px !important;
-  }
-
-  /* Flechas: pegadas al borde */
+  .product-wrap { width: 270px !important; height: 270px !important; }
   .arrow-prev { left: 10px !important; }
   .arrow-next { right: 10px !important; }
-  .arrow-btn { width: 38px !important; height: 38px !important; }
-  .arrow-btn svg { width: 18px !important; height: 18px !important; }
-
-  /* Precio: izquierda, más arriba para no chocar */
+  .arrow-btn  { width: 38px !important; height: 38px !important; }
+  .arrow-btn svg { width: 17px !important; height: 17px !important; }
   .price-block { left: 20px !important; bottom: 144px !important; }
   .price { font-size: 30px !important; }
   .price-label { font-size: 9px !important; }
-
-  /* Botón add to cart */
   .liquid-btn {
     bottom: 82px !important;
     padding: 17px 44px !important;
@@ -722,21 +705,19 @@ body {
   }
   .liquid-btn:hover  { transform: translateX(-50%) scale(1.04) !important; }
   .liquid-btn:active { transform: translateX(-50%) scale(0.97) !important; }
-
-  /* Dots */
   .dots { bottom: 46px !important; }
 
-  /* ─ CINTAS ─ */
+  /* CINTAS */
   .xtape-wrap { height: 110px; }
 
-  /* ─ SECCIÓN DESTACADOS ─ */
+  /* DESTACADOS */
   .csl-section { padding: 56px 0 72px; }
   .csl-title { font-size: clamp(44px, 11vw, 72px) !important; }
   .csl-title-wrap { margin-bottom: 36px; }
-  .csl-stroke { display: none; } /* El SVG se deforma, lo ocultamos */
+  .csl-stroke { display: none; }
 
-  /* ─ SECCIÓN PRODUCTOS ─ */
-  #productos { padding: 72px 16px 72px; }
+  /* PRODUCTOS */
+  #productos { padding: 72px 16px; }
   .productos-titulo { font-size: clamp(44px, 11vw, 64px) !important; }
   .productos-header { margin-bottom: 36px; }
   .productos-grid {
@@ -745,11 +726,11 @@ body {
     padding: 0 !important;
   }
   .card-info { padding: 14px 14px 16px !important; }
-  .card-name { font-size: 13px !important; line-height: 1.25 !important; }
+  .card-name  { font-size: 13px !important; line-height: 1.25 !important; }
   .card-price { font-size: 20px !important; margin-bottom: 12px !important; }
-  .card-btn { padding: 10px !important; font-size: 12px !important; }
+  .card-btn   { padding: 10px !important; font-size: 12px !important; }
 
-  /* ─ POR QUÉ ELEGIRNOS ─ */
+  /* POR QUÉ ELEGIRNOS */
   .porque-section { padding: 72px 16px; }
   .porque-grid {
     grid-template-columns: repeat(2, 1fr) !important;
@@ -759,7 +740,7 @@ body {
   .porque-card { padding: 24px 18px 20px !important; }
   .porque-icon { margin-bottom: 16px !important; }
 
-  /* ─ CONTACTO ─ */
+  /* CONTACTO */
   .contacto-section { padding: 72px 16px; }
   .contacto-grid {
     grid-template-columns: 1fr !important;
@@ -767,176 +748,209 @@ body {
     gap: 20px !important;
   }
   .contacto-cta { padding: 32px 24px !important; border-radius: 20px !important; }
-  .contacto-cta-text { font-size: 17px !important; line-height: 1.6 !important; }
+  .contacto-cta-text { font-size: 17px !important; }
   .contacto-wa-btn { padding: 16px 24px !important; }
 
-  /* ─ FOOTER ─ */
+  /* FOOTER */
   .footer { padding: 36px 20px; }
   .footer-nav { gap: 18px; }
   .footer-nav a { font-size: 13px; }
 
-  /* ─ CARRITO DRAWER ─ */
+  /* CARRITO DRAWER */
   .cart-drawer { width: 100% !important; max-width: 100% !important; }
 
   /* ══════════════════════════════════════════════
-     PPAGE — MODAL DE PRODUCTO EN MOBILE
-     Vertical: imagen arriba → info abajo → botones
+     PPAGE — MODAL PRODUCTO MOBILE
+
+     IMPORTANTE: NO usar display !important aquí.
+     El JS hace ppage.style.display = 'none' al init
+     y 'flex' al abrir — si ponemos display:flex !important
+     el modal aparece desde el inicio sin presionar nada.
      ══════════════════════════════════════════════ */
 
   .ppage {
+    /* Posición: inset:0 pisa el left/top del JS y agrega right/bottom */
     position: fixed !important;
     inset: 0 !important;
+
+    /* Tamaño: pisa el 100vw/100vh del JS.
+       - 100% en fixed = viewport sin scrollbar (mejor que 100vw)
+       - 100dvh = altura visual real, excluye barra de Android Chrome */
     width: 100% !important;
-    height: 100% !important;
-    height: 100svh !important;
-    border-radius: 0 !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+
+    /* Layout vertical */
     flex-direction: column !important;
+    border-radius: 0 !important;
     overflow: hidden !important;
-    display: flex !important;
+    box-sizing: border-box !important;
+
+    /* SIN display: flex !important — display lo controla el JS */
   }
 
-  /* Panel imagen: arriba, altura fija */
+  /* ─ Panel imagen: arriba, altura fija ─ */
   .ppage-img-panel {
     width: 100% !important;
-    height: 42svh !important;
+    max-width: 100% !important;
+    height: 44dvh !important;
     min-height: unset !important;
     flex-shrink: 0 !important;
     border-radius: 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
+    box-sizing: border-box !important;
   }
 
-  /* Thumbnails: ocultar para no saturar */
-  .ppage-thumbs { display: none !important; }
-
-  /* Imagen centrada en el panel */
   .ppage-img-wrap {
-    width: 68% !important;
-    height: 72% !important;
+    width: 65% !important;
+    height: 70% !important;
   }
 
-  /* Navegación de vistas: pegada a la derecha */
+  /* Flecha siguiente imagen: visible y dentro del panel */
   .ppage-img-next {
-    right: 12px !important;
-    width: 34px !important;
-    height: 34px !important;
+    right: 10px !important;
+    width: 32px !important;
+    height: 32px !important;
   }
-  .ppage-img-next svg { width: 16px !important; height: 16px !important; }
-  .ppage-img-dots { bottom: 12px !important; }
+  .ppage-img-next svg { width: 15px !important; height: 15px !important; }
+  .ppage-img-dots { bottom: 10px !important; }
 
-  /* Botón volver: sobre la imagen */
+  /* Botón volver */
   .ppage-back {
-    top: 14px !important;
-    left: 14px !important;
+    top: 12px !important;
+    left: 12px !important;
     padding: 6px 12px !important;
     font-size: 12px !important;
-    z-index: 25 !important;
+    z-index: 30 !important;
   }
-  .ppage-back svg { width: 15px !important; height: 15px !important; }
+  .ppage-back svg { width: 14px !important; height: 14px !important; }
 
-  /* Panel info: ocupa el resto, scroll interno */
+  /* Thumbnails (carrusel) → fila horizontal abajo del panel imagen */
+  .ppage-thumbs {
+    display: flex !important;
+    flex-direction: row !important;
+    position: absolute !important;
+    bottom: 10px !important;
+    top: auto !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    gap: 6px !important;
+    z-index: 10 !important;
+  }
+  .ppage-thumb {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 8px !important;
+  }
+
+  /* ─ Panel info: ocupa el resto, scroll interno ─ */
   .ppage-info {
     flex: 1 !important;
     min-height: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
-    padding: 20px 18px 24px !important;
-    gap: 16px !important;
+    padding: 20px 18px 28px !important;
+    gap: 14px !important;
     justify-content: flex-start !important;
     box-shadow: none !important;
     border-top: 1px solid rgba(0,0,0,0.08) !important;
   }
 
-  /* Nombre producto */
   .ppage-name {
-    font-size: clamp(22px, 5.5vw, 30px) !important;
+    font-size: clamp(20px, 5vw, 28px) !important;
     line-height: 1.15 !important;
-    margin-bottom: 0 !important;
   }
-
-  /* Descripción */
   .ppage-desc {
     font-size: 13px !important;
     max-width: 100% !important;
-    line-height: 1.65 !important;
+    line-height: 1.6 !important;
   }
 
-  /* Selector de precio */
-  .ppage-tier-selected { padding: 14px 16px !important; }
-  .ppage-tier-selected-text { font-size: 14px !important; }
-  .ppage-tier-selected-price { font-size: 20px !important; }
-  .ppage-tier-chevron svg { width: 16px !important; height: 16px !important; }
-
-  /* Acciones: apiladas verticalmente */
-  .ppage-actions {
-    flex-direction: column !important;
-    gap: 10px !important;
+  /* Tier selector */
+  #ppageTierWrap { width: 100% !important; box-sizing: border-box !important; }
+  .ppage-tier-selected {
+    padding: 13px 14px !important;
+    overflow: visible !important;
     width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .ppage-tier-selected-text  { font-size: 13px !important; }
+  .ppage-tier-selected-price { font-size: 18px !important; }
+  .ppage-tier-chevron svg    { width: 15px !important; height: 15px !important; }
+
+  /* ─ Acciones:
+     Fila 1: total + qty (ancho completo)
+     Fila 2: 🛒 (cuadrado) + Consultar (crece)
+     Fila 3: Pagar con MP (ancho completo)
+  ─ */
+  .ppage-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
     align-items: stretch !important;
   }
-
-  /* Fila total + cantidad: full width */
   .ppage-total-row {
-    flex: unset !important;
+    flex: 0 0 100% !important;
     width: 100% !important;
-    padding: 12px 14px !important;
+    box-sizing: border-box !important;
+    padding: 11px 14px !important;
     gap: 10px !important;
-    justify-content: space-between !important;
   }
-  .ppage-total-amount { font-size: 24px !important; }
-
-  /* Botón carrito: full width */
+  .ppage-total-amount { font-size: 22px !important; }
   .ppage-cart-btn {
-    width: 100% !important;
+    width: 50px !important;
+    min-width: 50px !important;
     height: 50px !important;
-    border-radius: 14px !important;
-    min-width: unset !important;
+    flex: none !important;
+    border-radius: 12px !important;
   }
-
-  /* WhatsApp y Mercado Pago: full width */
-  .ppage-wa-btn,
+  .ppage-cart-btn svg { width: 17px !important; height: 17px !important; }
+  .ppage-wa-btn {
+    flex: 1 !important;
+    min-width: 0 !important;
+    height: 50px !important;
+    font-size: 13px !important;
+  }
   .ppage-mp-btn {
-    flex: unset !important;
+    flex: 0 0 100% !important;
     width: 100% !important;
+    box-sizing: border-box !important;
     height: 50px !important;
-    font-size: 14px !important;
-    justify-content: center !important;
+    font-size: 13px !important;
   }
 
-  /* Accordions más compactos */
-  .ppage-accordion { margin-top: 16px !important; }
-  .ppage-accordion-header { padding: 14px 0 !important; }
+  .ppage-accordion { margin-top: 14px !important; }
+  .ppage-accordion-header { padding: 13px 0 !important; }
   .ppage-accordion-title { font-size: 14px !important; }
-
 }
 
-/* ── Small phones (≤ 430px) ── */
+/* ── ≤ 430px: pantallas pequeñas ── */
 @media (max-width: 430px) {
-
-  .bg-text { font-size: 56px !important; letter-spacing: -1.5px !important; }
-
+  .bg-text { font-size: 54px !important; letter-spacing: -1.5px !important; }
   .product-wrap { width: 240px !important; height: 240px !important; }
-
   .price { font-size: 26px !important; }
   .price-block { bottom: 138px !important; }
-
-  .liquid-btn {
-    padding: 15px 36px !important;
-    font-size: 14px !important;
-    bottom: 78px !important;
-  }
+  .liquid-btn { padding: 15px 36px !important; font-size: 14px !important; bottom: 76px !important; }
   .dots { bottom: 42px !important; }
 
   .productos-grid { gap: 10px !important; }
-  .card-info { padding: 12px 12px 14px !important; }
-  .card-name { font-size: 12px !important; }
+  .card-info  { padding: 12px 12px 14px !important; }
+  .card-name  { font-size: 12px !important; }
   .card-price { font-size: 17px !important; margin-bottom: 10px !important; }
-  .card-btn { padding: 9px !important; font-size: 11px !important; }
+  .card-btn   { padding: 9px !important; font-size: 11px !important; }
 
   .porque-grid { grid-template-columns: 1fr !important; }
 
-  .ppage-img-panel { height: 38svh !important; }
-  .ppage-name { font-size: 20px !important; }
-  .ppage-total-amount { font-size: 21px !important; }
-  .ppage-info { padding: 16px 16px 20px !important; gap: 14px !important; }
-
+  .ppage-img-panel { height: 38dvh !important; }
+  .ppage-name { font-size: 18px !important; }
+  .ppage-total-amount { font-size: 19px !important; }
+  .ppage-info { padding: 16px 14px 24px !important; gap: 12px !important; }
   .contacto-cta-text { font-size: 15px !important; }
 }
