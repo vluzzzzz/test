@@ -743,7 +743,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .product-wrap {
     width: 270px !important;
     height: 270px !important;
-    transform: translate(0, var(--hero-img-offset-y)) scale(min(var(--product-scale, 1), 1.3)) !important;
+    transform: translate(0, var(--hero-img-offset-y)) scale(min(var(--product-scale, 1), 0.9)) !important;
   }
 
   /* Flechas */
@@ -917,4 +917,85 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .contacto-cta-text { font-size: 15px !important; }
   .csl-stroke { width: min(240px, 58vw) !important; }
   .csl-name { font-size: clamp(22px, 5.5vw, 30px) !important; }
+}
+
+
+/* =============================================
+   FIX CARRITO — z-index encima del ppage
+   El carrito se abría pero quedaba detrás del
+   ppage-overlay (z-index 300, fondo blanco).
+   Subimos cart a 400/401 para estar siempre arriba.
+   ============================================= */
+
+/* Aplica en todas las pantallas */
+.cart-overlay { z-index: 400 !important; }
+.cart-drawer  { z-index: 401 !important; }
+
+/* En mobile: sacar backdrop-filter del drawer
+   (causa bugs de rendering en Android Chrome
+   cuando body tiene overflow:hidden) */
+@media (max-width: 900px) {
+  .cart-drawer {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(245, 245, 247, 0.99) !important;
+  }
+}
+
+
+/* =============================================
+   CART FIX FINAL — prioridad absoluta
+   ============================================= */
+.cart-overlay {
+  z-index: 9998 !important;
+}
+.cart-drawer {
+  z-index: 9999 !important;
+  visibility: visible !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(245, 245, 247, 0.99) !important;
+}
+
+/* =============================================
+   PATCH: Scroll jump fix + Blob fix + Per-product text
+   ============================================= */
+
+/* ── Eliminar content-visibility que causa el scroll jump ── */
+.csl-section, #productos, .porque-section, .contacto-section, .footer {
+  content-visibility: visible !important;
+  contain-intrinsic-size: unset !important;
+}
+
+/* ── Eliminar will-change de elementos estáticos
+   (solo debe aplicarse justo antes de animar, no siempre) ── */
+.product-stage, .bg-text-perspective, .product {
+  will-change: auto !important;
+}
+
+/* ── Custom property para tamaño de texto por producto
+   El JS setea --hero-text-size individualmente por producto ── */
+@media (max-width: 768px) {
+  .bg-text {
+    font-size: var(--hero-text-size, clamp(90px, 24vw, 150px)) !important;
+  }
+
+  /* Alineación perfecta del texto azul con el negro:
+     Hacer el texto azul completamente opaco para que el negro
+     no se cuele por los bordes del blob */
+  .bg-text-blue {
+    opacity: 1 !important;
+    color: #0071e3 !important;
+  }
+
+  /* Quitar el texto zoom en mobile — solo confunde el alineamiento */
+  .bg-text-zoom {
+    display: none !important;
+  }
+
+  /* Product wrap: usar --product-y del JS (per-product via PRODUCT_CONFIG) */
+  .product-wrap {
+    transform: translate(0, var(--product-y, -15px))
+               scale(min(var(--product-scale, 1), 1.3)) !important;
+  }
 }
