@@ -661,9 +661,12 @@ const ProductModal = (() => {
 
   function showModal(card){
     ppage.style.display='flex'; ppage.style.position='fixed';
+    ppage.style.inset='0';
     ppage.style.left='0'; ppage.style.top='0';
-    ppage.style.width='100vw'; ppage.style.height='100vh';
+    ppage.style.right='0'; ppage.style.bottom='0';
+    ppage.style.width=''; ppage.style.height='';
     ppage.style.borderRadius='0'; ppage.style.overflow='hidden';
+    document.body.style.overflow='hidden';
     ppage.style.viewTransitionName='vt-container';
     document.getElementById('ppageImg').style.viewTransitionName='vt-image';
     ppage.classList.add('active');
@@ -692,6 +695,7 @@ const ProductModal = (() => {
     document.getElementById('ppageImg').style.viewTransitionName='';
     if(targetCard) targetCard.classList.remove('animating');
     isOpen=false; currentProduct=null; originCard=null;
+    document.body.style.overflow='';
   }
 
   function open(card){
@@ -754,7 +758,8 @@ const ProductModal = (() => {
     if(!document.startViewTransition){
       const cx=(originRect.left+originRect.width/2)/window.innerWidth*100;
       const cy=(originRect.top+originRect.height/2)/window.innerHeight*100;
-      ppage.style.cssText=`display:flex;position:fixed;left:0;top:0;width:100vw;height:100vh;border-radius:0;overflow:hidden;transform-origin:${cx.toFixed(2)}% ${cy.toFixed(2)}%;`;
+      ppage.style.cssText=`display:flex;position:fixed;inset:0;border-radius:0;overflow:hidden;transform-origin:${cx.toFixed(2)}% ${cy.toFixed(2)}%;`;
+      document.body.style.overflow='hidden';
       ppage.classList.add('active'); overlay.classList.add('active');
       overlay.style.opacity='0'; card.style.visibility='hidden';
       gsap.to(overlay,{opacity:1,duration:0.4,ease:'power2.out'});
