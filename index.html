@@ -587,18 +587,26 @@
         <label class="checkout-label">Nombre completo *</label>
         <input class="checkout-input" id="chkName" type="text" placeholder="Ej: Juan Pérez" required>
         <label class="checkout-label">Email *</label>
-        <input class="checkout-input" id="chkEmail" type="email" placeholder="Tu usuario" list="emailDomains" required>
-        <datalist id="emailDomains">
-          <option value="@gmail.com">
-          <option value="@hotmail.com">
-          <option value="@outlook.com">
-          <option value="@yahoo.com">
-          <option value="@icloud.com">
-        </datalist>
+        <div class="split-input">
+          <input class="checkout-input split-left" id="chkEmailUser" type="text" placeholder="Tu usuario" required>
+          <div class="split-right select-wrap">
+            <select class="checkout-select" id="chkEmailDomain">
+              <option value="@gmail.com">@gmail.com</option>
+              <option value="@hotmail.com">@hotmail.com</option>
+              <option value="@outlook.com">@outlook.com</option>
+              <option value="@yahoo.com">@yahoo.com</option>
+              <option value="@icloud.com">@icloud.com</option>
+            </select>
+            <svg class="select-chevron" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+          </div>
+        </div>
         <label class="checkout-label">Teléfono *</label>
-        <input class="checkout-input" id="chkPhone" type="tel" inputmode="tel" required>
+        <div class="split-input">
+          <div class="split-prefix">+56</div>
+          <input class="checkout-input split-right" id="chkPhone" type="tel" inputmode="tel" placeholder="9 1234 5678" required>
+        </div>
         <label class="checkout-label">RUT</label>
-        <input class="checkout-input" id="chkRut" type="text" placeholder="Ej: 12.345.678-9">
+        <input class="checkout-input" id="chkRut" type="text" placeholder="12345678-9" maxlength="12">
         <label class="checkout-label">Ciudad / Región *</label>
         <input class="checkout-input" id="chkCity" type="text" placeholder="Ej: Santiago" required>
         <label class="checkout-label">Dirección</label>
