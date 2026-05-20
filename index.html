@@ -567,21 +567,36 @@
 <!-- CHECKOUT MODAL -->
 <div class="checkout-overlay" id="checkoutOverlay"></div>
 <div class="checkout-modal" id="checkoutModal" style="display:none">
-  <div class="checkout-inner">
-    <div class="checkout-form">
-      <div class="checkout-header">
-        <h2>Completá tus datos</h2>
-        <button class="checkout-close" id="checkoutClose" aria-label="Cerrar">
-          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        </button>
+  <div class="checkout-header-bar">
+    <h2>Finalizar pedido</h2>
+    <button class="checkout-close" id="checkoutClose" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </button>
+  </div>
+  <div class="checkout-body">
+    <div class="checkout-summary-col">
+      <h3>Tu pedido</h3>
+      <div class="checkout-items" id="checkoutItems"></div>
+      <div class="checkout-total-row">
+        <span>Total</span>
+        <span class="checkout-total-amount" id="checkoutTotal">$0</span>
       </div>
+    </div>
+    <div class="checkout-form-col">
       <div class="checkout-fields">
         <label class="checkout-label">Nombre completo *</label>
         <input class="checkout-input" id="chkName" type="text" placeholder="Ej: Juan Pérez" required>
         <label class="checkout-label">Email *</label>
-        <input class="checkout-input" id="chkEmail" type="email" placeholder="Ej: juan@correo.com" required>
+        <input class="checkout-input" id="chkEmail" type="email" placeholder="Tu usuario" list="emailDomains" required>
+        <datalist id="emailDomains">
+          <option value="@gmail.com">
+          <option value="@hotmail.com">
+          <option value="@outlook.com">
+          <option value="@yahoo.com">
+          <option value="@icloud.com">
+        </datalist>
         <label class="checkout-label">Teléfono *</label>
-        <input class="checkout-input" id="chkPhone" type="tel" placeholder="Ej: +56 9 1234 5678" required>
+        <input class="checkout-input" id="chkPhone" type="tel" inputmode="tel" required>
         <label class="checkout-label">RUT</label>
         <input class="checkout-input" id="chkRut" type="text" placeholder="Ej: 12.345.678-9">
         <label class="checkout-label">Ciudad / Región *</label>
@@ -589,22 +604,16 @@
         <label class="checkout-label">Dirección</label>
         <input class="checkout-input" id="chkAddress" type="text" placeholder="Ej: Av. Siempre Viva 123">
       </div>
-    </div>
-    <div class="checkout-summary">
-      <h3>Tu pedido</h3>
-      <div class="checkout-items" id="checkoutItems"></div>
-      <div class="checkout-total-row">
-        <span>Total</span>
-        <span class="checkout-total-amount" id="checkoutTotal">$0</span>
+      <div class="checkout-actions">
+        <button class="checkout-pay-btn" id="checkoutPayBtn" disabled>
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;vertical-align:middle;margin-right:8px"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+          Pagar con Mercado Pago
+        </button>
+        <p class="checkout-disclaimer">Tus datos son solo para procesar el pedido. No los compartimos con terceros.</p>
+        <p class="checkout-wa-fallback">
+          Tambi&eacute;n pod&eacute;s <a href="#" id="checkoutWaBtn">pedir por WhatsApp</a>
+        </p>
       </div>
-      <button class="checkout-pay-btn" id="checkoutPayBtn" disabled>
-        <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;vertical-align:middle;margin-right:8px"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-        Pagar con Mercado Pago
-      </button>
-      <p class="checkout-disclaimer">Tus datos son solo para procesar el pedido. No los compartimos con terceros.</p>
-      <p class="checkout-wa-fallback">
-        Tambi&eacute;n pod&eacute;s <a href="#" id="checkoutWaBtn">pedir por WhatsApp</a>
-      </p>
     </div>
   </div>
 </div>
