@@ -295,7 +295,7 @@ const Cart=(()=>{
   }
   function openMercadoPago(){
     if(!state.cart.length)return;
-    Checkout.openFromWidth(400);
+    Checkout.open();
   }
   function openWhatsApp(){
     if(!state.cart.length)return;
