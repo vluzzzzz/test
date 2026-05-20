@@ -581,15 +581,18 @@
         <label class="checkout-label">Email *</label>
         <div class="split-input">
           <input class="checkout-input split-left" id="chkEmailUser" type="text" placeholder="Tu usuario" required>
-          <div class="split-right select-wrap">
-            <select class="checkout-select" id="chkEmailDomain">
-              <option value="@gmail.com">@gmail.com</option>
-              <option value="@hotmail.com">@hotmail.com</option>
-              <option value="@outlook.com">@outlook.com</option>
-              <option value="@yahoo.com">@yahoo.com</option>
-              <option value="@icloud.com">@icloud.com</option>
-            </select>
-            <svg class="select-chevron" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+          <div class="split-right eds" id="eds">
+            <div class="eds-trigger" id="edsTrigger">
+              <span id="edsValue">@gmail.com</span>
+              <svg class="eds-chevron" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+            </div>
+            <div class="eds-menu" id="edsMenu">
+              <div class="eds-opt" data-value="@gmail.com">@gmail.com</div>
+              <div class="eds-opt" data-value="@hotmail.com">@hotmail.com</div>
+              <div class="eds-opt" data-value="@outlook.com">@outlook.com</div>
+              <div class="eds-opt" data-value="@yahoo.com">@yahoo.com</div>
+              <div class="eds-opt" data-value="@icloud.com">@icloud.com</div>
+            </div>
           </div>
         </div>
         <label class="checkout-label">Teléfono *</label>
