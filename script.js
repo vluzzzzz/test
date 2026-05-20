@@ -6,9 +6,9 @@ const HERO_NAME_MAP = {
 };
 const HERO_STOCK = {};
 const PRODUCTS=[
-  {id:1,key:'airpods-pro-2',name:'AirPods Pro 2',price:'',rawPrice:0,image:'images/airpods.png',bgLabel:'AIRPODS PRO 2',scale:1,offsetX:0,offsetY:0},
-  {id:2,key:'airpods-4',name:'AirPods 4',price:'',rawPrice:0,image:'images/airpods4.png',bgLabel:'AIRPODS 4',scale:0.8,offsetX:0,offsetY:0},
-  {id:3,key:'airpods-max',name:'AirPods Max',price:'',rawPrice:0,image:'images/airpodsmax.png',bgLabel:'AIRPODS MAX',scale:1.4,offsetX:50,offsetY:-20},
+  {id:1,key:'airpods-pro-2',name:'AirPods Pro 2',price:'',rawPrice:0,image:'images/airpods.webp',bgLabel:'AIRPODS PRO 2',scale:1,offsetX:0,offsetY:0},
+  {id:2,key:'airpods-4',name:'AirPods 4',price:'',rawPrice:0,image:'images/airpods4.webp',bgLabel:'AIRPODS 4',scale:0.8,offsetX:0,offsetY:0},
+  {id:3,key:'airpods-max',name:'AirPods Max',price:'',rawPrice:0,image:'images/airpodsmax.webp',bgLabel:'AIRPODS MAX',scale:1.4,offsetX:50,offsetY:-20},
 ];
 const getUnitPrice=(key,qty)=>{const t=PRICE_TIERS[key];if(!t||!t.length)return 0;let p=t[0].price;for(const r of t)if(qty>=r.qty)p=r.price;return p;};
 const PRICE_TIERS={
@@ -295,8 +295,17 @@ const Cart=(()=>{
   }
   function openMercadoPago(){
     if(!state.cart.length)return;
-    Cart.close();
-    Checkout.open();
+    Checkout.renderItems();
+    Checkout.updatePayBtn();
+    gsap.killTweensOf(DOM.cartDrawer);
+    gsap.killTweensOf(DOM.cartOverlay);
+    DOM.cartOverlay.classList.remove('visible');
+    gsap.set(DOM.cartDrawer,{display:'none',visibility:'',zIndex:''});
+    gsap.set(DOM.cartOverlay,{opacity:0,display:''});
+    isOpen=false;
+    document.body.style.overflow='';
+    document.documentElement.style.overflow='';
+    Checkout.openFromWidth(400);
   }
   function openWhatsApp(){
     if(!state.cart.length)return;
@@ -410,6 +419,19 @@ const Checkout=(()=>{
     return formatted+'-'+checker;
   }
 
+  function clearForm(){
+    ['chkName','chkRut','chkCity','chkAddress'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){el.value='';el.classList.remove('error');}
+    });
+    const eu=document.getElementById('chkEmailUser');
+    if(eu)eu.value='';
+    const ev=document.getElementById('edsValue');
+    if(ev)ev.textContent='@gmail.com';
+    const ph=document.getElementById('chkPhone');
+    if(ph)ph.value='';
+  }
+
   function open(){
     if(isOpen)return;
     isOpen=true;
@@ -421,16 +443,22 @@ const Checkout=(()=>{
     gsap.to(panel,{x:'0%',duration:0.4,ease:'power3.out',delay:0.05});
     document.body.style.overflow='hidden';
     document.documentElement.style.overflow='hidden';
-    ['chkName','chkRut','chkCity','chkAddress'].forEach(id=>{
-      const el=document.getElementById(id);
-      if(el){el.value='';el.classList.remove('error');}
-    });
-    const eu=document.getElementById('chkEmailUser');
-    if(eu)eu.value='';
-    const ev=document.getElementById('edsValue');
-    if(ev)ev.textContent='@gmail.com';
-    const ph=document.getElementById('chkPhone');
-    if(ph)ph.value='';
+    clearForm();
+    updatePayBtn();
+  }
+
+  function openFromWidth(startWidth){
+    if(isOpen)return;
+    isOpen=true;
+    const endWidth = Math.min(860, window.innerWidth);
+    gsap.killTweensOf(modal);gsap.killTweensOf(panel);
+    gsap.set(modal,{display:'flex',opacity:0});
+    gsap.set(panel,{x:'100%',width:startWidth,maxWidth:startWidth});
+    gsap.to(modal,{opacity:1,duration:0.2,ease:'power2.out'});
+    gsap.to(panel,{x:'0%',width:endWidth,maxWidth:endWidth,duration:0.5,ease:'power3.out',onComplete:()=>{gsap.set(panel,{clearProps:'width,maxWidth'});}});
+    document.body.style.overflow='hidden';
+    document.documentElement.style.overflow='hidden';
+    clearForm();
     updatePayBtn();
   }
 
@@ -506,7 +534,7 @@ const Checkout=(()=>{
     window.open(`https://wa.me/56942348587?text=${encodeURIComponent(msg)}`,'_blank');
   }
 
-  return{init,open,close};
+  return{init,open,close,openFromWidth,renderItems,updatePayBtn};
 })();
 
 function setHeroAddToCartState(inStock){
@@ -594,11 +622,11 @@ const ProductModal=(()=>{
     if(pi){pi.style.viewTransitionName='';pi.style.transition='';pi.style.opacity='';}
   }
 
-  const PRODUCT_IMAGES={'apple-watch-ultra-3':'images/apple-watch-ultra-3.png','apple-watch-serie-10':'images/serie-10.png','apple-watch-black-ultra-2':'images/black-ultra-2.png','airpods-4':'images/airpods-4gen.png','airpods-pro-2':'images/airpods-pro-2.png','airpods-3':'images/airpods-3gen.png','bateria-magsafe':'images/bateria-magsafe.png','airpods-max':'images/max-magneticos.png','cargador-lightning':'images/cargador-lightning.png','cargador-tipo-c':'images/cargador-tipo-c.png','cargador-samsung-45w':'images/cargador-samsung-45w.png'};
+  const PRODUCT_IMAGES={'apple-watch-ultra-3':'images/apple-watch-ultra-3.webp','apple-watch-serie-10':'images/serie-10.webp','apple-watch-black-ultra-2':'images/black-ultra-2.webp','airpods-4':'images/airpods-4gen.webp','airpods-pro-2':'images/airpods-pro-2.webp','airpods-3':'images/airpods-3gen.webp','bateria-magsafe':'images/bateria-magsafe.webp','airpods-max':'images/max-magneticos.webp','cargador-lightning':'images/cargador-lightning.webp','cargador-tipo-c':'images/cargador-tipo-c.webp','cargador-samsung-45w':'images/cargador-samsung-45w.webp'};
   const slug=n=>n.toLowerCase().replace(/\s+/g,'-').replace(/[áä]/g,'a').replace(/[éë]/g,'e').replace(/[íï]/g,'i').replace(/[óö]/g,'o').replace(/[úü]/g,'u').replace(/[^a-z0-9-]/g,'');
   const TWO=['bateria-magsafe','cargador-lightning','cargador-tipo-c','cargador-samsung-45w'];
   const FILE_PREFIX={'airpods-4':'airpods-4ta-generacion','airpods-3':'airpods-3ra-generacion','airpods-max':'max-magneticos','cargador-lightning':'cargador-lightning-completo','cargador-tipo-c':'cargador-tipo-c-completo'};
-  const buildImgList=(src,key)=>{const s=slug(key),fk=FILE_PREFIX[s]||s,v1=PRODUCT_IMAGES[s]||src;return TWO.includes(s)?[v1,`images/${fk}-v2.png`]:[v1,`images/${fk}-v2.png`,`images/${fk}-v3.png`];};
+  const buildImgList=(src,key)=>{const s=slug(key),fk=FILE_PREFIX[s]||s,v1=PRODUCT_IMAGES[s]||src;return TWO.includes(s)?[v1,`images/${fk}-v2.webp`]:[v1,`images/${fk}-v2.webp`,`images/${fk}-v3.webp`];};
   const IMG_SCALES={'apple-watch-ultra-3':[1,1,1],'apple-watch-serie-10':[1,1,.75],'apple-watch-black-ultra-2':[1,.75,.75],'airpods-4':[1,1,1.3],'airpods-pro-2':[1,1,1],'airpods-3':[1,1,1],'bateria-magsafe':[1,1,1],'airpods-max':[1,1,1],'cargador-lightning':[1,1.4,1],'cargador-tipo-c':[1,1,1],'cargador-samsung-45w':[1,1,1]};
 
   function renderDots(){const w=document.getElementById('ppageImgDots');if(!w)return;w.innerHTML=imgList.map((_,i)=>`<div class="ppage-img-dot${i===imgIndex?' active':''}"></div>`).join('');w.querySelectorAll('.ppage-img-dot').forEach((d,i)=>d.addEventListener('click',()=>goToImg(i)));}
