@@ -294,23 +294,18 @@ body:not(.sheet-ready) .csl-price {
   filter: grayscale(.35);
 }
 
-.out-of-stock .card-btn,
-.out-of-stock .csl-rect {
-  background: var(--gray-mid) !important;
-  color: var(--black) !important;
-  cursor: pointer;
+.out-of-stock .card-btn {
+  pointer-events: none;
 }
 
-.out-of-stock .card-btn:hover,
-.out-of-stock .csl-rect:hover {
+.out-of-stock .csl-rect {
+  pointer-events: none;
+}
+
+.out-of-stock.csl-slide:hover .csl-rect {
+  pointer-events: none;
   background: var(--white) !important;
   color: var(--black) !important;
-  border: 1px solid rgba(0,0,0,.12);
-}
-
-.out-of-stock .card-btn:active,
-.out-of-stock .csl-rect:active {
-  transform: scale(.97);
 }
 
    
