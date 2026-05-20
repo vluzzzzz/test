@@ -4,6 +4,7 @@ const HERO_NAME_MAP = {
   'AirPods 3ra Generación': 'AirPods 3',
   'Max Magnéticos': 'AirPods Max',
 };
+const HERO_STOCK = {};
 const PRODUCTS=[
   {id:1,name:'AirPods Pro 2',price:'',rawPrice:0,image:'images/airpods.png',bgLabel:'AIRPODS PRO 2',scale:1,offsetX:0,offsetY:0},
   {id:2,name:'AirPods 4',price:'',rawPrice:0,image:'images/airpods4.png',bgLabel:'AIRPODS 4',scale:0.8,offsetX:0,offsetY:0},
@@ -134,24 +135,16 @@ async function syncSheetToConfig() {
         if (!stock) {
           card.classList.add('out-of-stock');
           card.setAttribute('aria-disabled', 'true');
-            // Cambiar botón a "SIN STOCK"
             const outBtn = card.querySelector('.card-btn') || card.querySelector('.csl-rect');
             if (outBtn) {
               outBtn.textContent = 'SIN STOCK';
-              outBtn.style.background = 'var(--gray-mid)';
-              outBtn.style.color = 'var(--black)';
-              outBtn.disabled = true;
             }
         } else {
           card.classList.remove('out-of-stock');
           card.removeAttribute('aria-disabled');
-            // Restaurar botón "Ver más"
             const inBtn = card.querySelector('.card-btn') || card.querySelector('.csl-rect');
             if (inBtn) {
               inBtn.textContent = 'Ver más';
-              inBtn.style.background = '';
-              inBtn.style.color = '';
-              inBtn.disabled = false;
             }
         }
       });
@@ -166,26 +159,12 @@ sheetProducts.forEach(({ name, tiers, stock }) => {
     if (prod) {
       prod.price = fmt(priceOne.price);
       prod.rawPrice = priceOne.price;
+      HERO_STOCK[heroName] = stock;
       // Si el héroe está mostrando este producto, actualizar su UI
       if (DOM.productPrice && PRODUCTS[state.current] && PRODUCTS[state.current].name === heroName) {
-        if (!stock) {
-          DOM.productPrice.textContent = 'SIN STOCK';
-          // bloquear botón "Agregar al carrito"
-          if (DOM.addToCart) {
-            DOM.addToCart.disabled = true;
-            DOM.addToCart.style.background = 'var(--gray-mid)';
-            DOM.addToCart.style.color = 'var(--black)';
-          }
-        } else {
-          DOM.productPrice.textContent = fmt(priceOne.price);
-          if (DOM.addToCart) {
-            DOM.addToCart.disabled = false;
-            DOM.addToCart.style.background = '';
-            DOM.addToCart.style.color = '';
-          }
-        }
-        // opcional: actualizar atributo data-price en la imagen si se usa
+        DOM.productPrice.textContent = fmt(priceOne.price);
         DOM.productImg.dataset.price = priceOne.price;
+        setHeroAddToCartState(stock);
       }
     }
   }
@@ -260,7 +239,7 @@ const ProductNav=(()=>{
       gsap.set(stage,{x:-70*imgSign,opacity:0}); gsap.set(DOM.bgTextPerspective,{x:-70*textSign,opacity:0});
       if(priceEl)gsap.set(priceEl,{y:'110%',opacity:1});
       function runEntrance(){
-        gsap.to(stage,{x:0,opacity:1,duration:0.44,ease:'power2.out',onComplete(){startFloat();state.isTransitioning=false;if(window.innerWidth<=768&&typeof MaskReveal!=='undefined')MaskReveal.refreshMobile();}});
+        gsap.to(stage,{x:0,opacity:1,duration:0.44,ease:'power2.out',onComplete(){startFloat();state.isTransitioning=false;setHeroAddToCartState(HERO_STOCK[product.name] !== false);if(window.innerWidth<=768&&typeof MaskReveal!=='undefined')MaskReveal.refreshMobile();}});
         gsap.to(DOM.bgTextPerspective,{x:0,opacity:1,duration:0.44,ease:'power2.out'});
         if(priceEl)gsap.to(priceEl,{y:'0%',duration:0.36,ease:'power2.out',delay:0.06});
       }
@@ -277,6 +256,7 @@ const ProductNav=(()=>{
     document.addEventListener('touchend',e=>{const d=tsx-e.changedTouches[0].clientX;if(Math.abs(d)>50)d>0?goTo((state.current+1)%PRODUCTS.length,'next'):goTo((state.current-1+PRODUCTS.length)%PRODUCTS.length,'prev');});
     document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')goTo((state.current+1)%PRODUCTS.length,'next');if(e.key==='ArrowLeft')goTo((state.current-1+PRODUCTS.length)%PRODUCTS.length,'prev');});
     applyWrapVars(PRODUCTS[0]); startFloat();
+    setHeroAddToCartState(HERO_STOCK[PRODUCTS[0].name] !== false);
   }
   return{init};
 })();
@@ -334,6 +314,18 @@ const Cart=(()=>{
   }
   return{init,addItem,open,close};
 })();
+
+function setHeroAddToCartState(inStock){
+  if(!DOM.addToCart)return;
+  DOM.addToCart.disabled = !inStock;
+  if(!inStock){
+    DOM.addToCart.style.opacity = '.4';
+    DOM.addToCart.style.pointerEvents = 'none';
+  } else {
+    DOM.addToCart.style.opacity = '';
+    DOM.addToCart.style.pointerEvents = '';
+  }
+}
 
 const CartButton=(()=>{
   let timer=null;
