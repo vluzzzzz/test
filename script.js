@@ -433,11 +433,21 @@ const Checkout=(()=>{
     isOpen=true;
     console.log('💳 Checkout.open()');
     renderItems();
-    gsap.killTweensOf(modal);gsap.killTweensOf(panel);
-    gsap.set(modal,{display:'flex',opacity:0});
-    gsap.set(panel,{x:'100%'});
-    gsap.to(modal,{opacity:1,duration:0.25,ease:'power2.out'});
-    gsap.to(panel,{x:'0%',duration:0.4,ease:'power3.out',delay:0.05});
+
+    // TEST: mostrar modal directo (sin GSAP)
+    modal.style.display = 'flex';
+    modal.style.opacity = '1';
+    panel.style.transform = 'translateX(0%)';
+    const csModal = getComputedStyle(modal);
+    const csPanel = getComputedStyle(panel);
+    const csCart = getComputedStyle(DOM.cartDrawer);
+    console.log('🔍 TEST directo — modal.display:', csModal.display, '| opacity:', csModal.opacity, '| z-index:', csModal.zIndex);
+    console.log('🔍 TEST directo — panel.transform:', csPanel.transform, '| width:', csPanel.width, '| height:', csPanel.height);
+    console.log('🔍 TEST directo — cart.z-index:', csCart.zIndex, '| cart.display:', csCart.display);
+    console.log('🔍 TEST directo — modal rect:', modal.getBoundingClientRect());
+    console.log('🔍 TEST directo — panel rect:', panel.getBoundingClientRect());
+    console.log('🔍 TEST directo — cart rect:', DOM.cartDrawer.getBoundingClientRect());
+
     document.body.style.overflow='hidden';
     document.documentElement.style.overflow='hidden';
     clearForm();
