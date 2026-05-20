@@ -295,16 +295,6 @@ const Cart=(()=>{
   }
   function openMercadoPago(){
     if(!state.cart.length)return;
-    Checkout.renderItems();
-    Checkout.updatePayBtn();
-    gsap.killTweensOf(DOM.cartDrawer);
-    gsap.killTweensOf(DOM.cartOverlay);
-    DOM.cartOverlay.classList.remove('visible');
-    gsap.set(DOM.cartDrawer,{display:'none',visibility:'',zIndex:''});
-    gsap.set(DOM.cartOverlay,{opacity:0,display:''});
-    isOpen=false;
-    document.body.style.overflow='';
-    document.documentElement.style.overflow='';
     Checkout.openFromWidth(400);
   }
   function openWhatsApp(){
@@ -450,6 +440,7 @@ const Checkout=(()=>{
   function openFromWidth(startWidth){
     if(isOpen)return;
     isOpen=true;
+    renderItems();
     const endWidth = Math.min(860, window.innerWidth);
     gsap.killTweensOf(modal);gsap.killTweensOf(panel);
     gsap.set(modal,{display:'flex',opacity:0});
