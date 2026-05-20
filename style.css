@@ -490,12 +490,8 @@ button:focus,a:focus,div:focus{outline:none!important}
 
 /* ═══════════════════════════════════════════
    CHECKOUT MODAL */
-.checkout-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);z-index:10000;opacity:0;pointer-events:none;transition:opacity .3s}
-.checkout-overlay.active{opacity:1;pointer-events:all}
-.checkout-modal{position:fixed;top:0;right:0;bottom:0;left:0;width:100vw;height:100dvh;z-index:10001;background:rgba(0,0,0,.3);display:flex;justify-content:flex-end;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .3s}
-.checkout-modal.active{opacity:1;pointer-events:all}
-.checkout-panel{width:min(860px,100vw);height:100%;background:#fff;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);box-shadow:-6px 0 32px rgba(0,0,0,.1)}
-.checkout-modal.active .checkout-panel{transform:translateX(0)}
+.checkout-modal{position:fixed;top:0;right:0;bottom:0;left:0;width:100vw;height:100dvh;z-index:10001;display:flex;justify-content:flex-end;overflow:hidden;background:rgba(0,0,0,.35);backdrop-filter:blur(4px)}
+.checkout-panel{width:min(860px,100vw);height:100%;background:#fff;display:flex;flex-direction:column;box-shadow:-6px 0 32px rgba(0,0,0,.1)}
 .checkout-header-bar{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;border-bottom:1px solid rgba(0,0,0,.07);flex-shrink:0}
 .checkout-header-bar h2{font-size:18px;font-weight:600;letter-spacing:-.01em}
 .checkout-close{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;background:rgba(0,0,0,.04)}
