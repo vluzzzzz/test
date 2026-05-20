@@ -7,7 +7,10 @@ button{background:none;border:none;cursor:pointer;font:inherit}
   --ease-smooth:cubic-bezier(0.4,0,0.2,1);--ease-spring:cubic-bezier(0.34,1.56,0.64,1);--ease-out:cubic-bezier(0.0,0,0.2,1);
   --hero-img-offset-y:-15px;--stroke-top:42px;--stroke-x:-35%;
 
-
+  /* ── VELOCIDAD DE TRANSICIÓN MODAL ──────────────────────────
+     Editá SOLO este número para controlar toda la animación.
+     Más bajo = más rápido. Recomendado: entre 0.30s y 0.55s.
+     Valor actual: 0.38s (rápido pero legible)               */
   --vt-dur: 0.30s;
 }
 html{scroll-behavior:smooth}
@@ -102,7 +105,9 @@ body:not(.sheet-ready) .csl-price {
 .cart-total{display:flex;justify-content:space-between;font-size:15px;font-weight:600;margin-bottom:16px}
 .checkout-btn{width:100%;padding:16px;border-radius:14px;background:var(--black);color:var(--white);font-family:var(--font-body);font-size:15px;font-weight:500;letter-spacing:.01em;transition:transform .2s var(--ease-spring),background .2s;display:flex;align-items:center;justify-content:center}
 .checkout-btn:hover{transform:scale(1.02)}
+/* Botón WhatsApp */
 #checkoutBtn:hover{background:#25D366}
+/* Botón Mercado Pago */
 #mpBtn:hover{background:#009ee3}
 .nav,.bg-text,.product,.arrow-btn{animation:fadeUp .8s var(--ease-out) both}
 .nav{animation-delay:0s}.bg-text{animation-delay:.1s}.product{animation-delay:.2s}.arrow-btn{animation-delay:.45s}
@@ -280,31 +285,32 @@ body:not(.sheet-ready) .csl-price {
 .csl-pagination .swiper-pagination-bullet-active{width:20px;border-radius:99px;background:var(--black)}
 .swiper-slide-shadow,.swiper-slide-shadow-left,.swiper-slide-shadow-right,.swiper-slide-shadow-top,.swiper-slide-shadow-bottom{display:none!important;opacity:0!important}
 
+/* ═══════════════════════════════════════════════════════
+   VIEW TRANSITIONS — CONTAINER TRANSFORM */
 
+/* ---------- PRODUCTO SIN STOCK ---------- */
 .out-of-stock {
-  opacity: .45;
-  filter: grayscale(1);
-  pointer-events: none;              
+  opacity: .6;
+  filter: grayscale(.35);
 }
 
-
-.out-of-stock .card-price::after,
-.out-of-stock .price::after,
-.out-of-stock .csl-price::after {
-  content: "Sin stock";
-  display: block;
-  font-size: .85rem;
-  color: var(--gray-mid);
-  margin-top: 4px;
+.out-of-stock .card-btn,
+.out-of-stock .csl-rect {
+  background: var(--gray-mid) !important;
+  color: var(--black) !important;
+  cursor: pointer;
 }
 
-.out-of-stock::before {
-  content: "⚠️";
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  font-size: 1.4rem;
-  opacity: .7;
+.out-of-stock .card-btn:hover,
+.out-of-stock .csl-rect:hover {
+  background: var(--white) !important;
+  color: var(--black) !important;
+  border: 1px solid rgba(0,0,0,.12);
+}
+
+.out-of-stock .card-btn:active,
+.out-of-stock .csl-rect:active {
+  transform: scale(.97);
 }
 
    
@@ -320,8 +326,10 @@ body:not(.sheet-ready) .csl-price {
    de que el container termina de expandirse.
    ═══════════════════════════════════════════════════════ */
 
+/* Root: corte instantáneo — solo animan los elementos nombrados */
 ::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
 
+/* card-container: la caja se estira libremente */
 ::view-transition-group(card-container){
   animation-duration:var(--vt-dur);
   animation-timing-function:cubic-bezier(.4,0,.2,1);
@@ -334,18 +342,29 @@ body:not(.sheet-ready) .csl-price {
   width:100%;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   CIERRE CARDS NORMALES
+   :root.vt-closing-card activo solo durante el cierre.
 
+   TRUCO: background:#ffffff en el GRUPO.
+   El OLD state (contenido: texto, botones) hace fade 1→0 al 50%.
+   El grupo tiene su propio fondo blanco → la caja SIEMPRE se ve
+   sólida aunque el OLD se vuelva transparente.
+   Resultado: contenido se achica y desaparece, caja blanca sólida.
+   ══════════════════════════════════════════════════════════════ */
 
 :root.vt-closing-card::view-transition-group(card-container){
   overflow: clip;
   border-radius: 20px;
-  background: #ffffff;     
+  background: #ffffff;     /* <-- la caja siempre blanca, nunca transparente */
   animation-duration: var(--vt-dur);
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 9990;
 }
 
-
+/* OLD = modal completo. Se desvanece mientras la caja encoge.
+   El contenido (texto, botones) escala y desaparece.
+   El fondo blanco del GRUPO permanece sólido debajo. */
 :root.vt-closing-card::view-transition-old(card-container){
   animation: vt-modal-compress var(--vt-dur) ease-in forwards;
   mix-blend-mode: normal;
@@ -353,6 +372,7 @@ body:not(.sheet-ready) .csl-price {
   width: 100%;
 }
 
+/* NEW = card destino. Aparece limpia al final. */
 :root.vt-closing-card::view-transition-new(card-container){
   animation: vt-card-appear var(--vt-dur) ease-out forwards;
   mix-blend-mode: normal;
@@ -371,7 +391,10 @@ body:not(.sheet-ready) .csl-price {
   100% { opacity: 1; }
 }
 
-
+/* product-hero: el PNG vuela SIN fantasma
+   Causa del duplicado: el browser pinta OLD y NEW al mismo tiempo.
+   Fix: display:none en OLD → solo existe UN PNG en todo momento.
+   Al ser la misma imagen no se nota el swap — 0 ghost. */
 ::view-transition-group(product-hero){
   animation-duration: var(--vt-dur);
   animation-timing-function:cubic-bezier(0.25,0,0.25,1);
