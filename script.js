@@ -158,7 +158,7 @@ sheetProducts.forEach(({ name, tiers, stock }) => {
   }
 }
 
-}
+
 
 const FEATURES={
   'airpods-pro-2':['Cancelación activa de ruido','Audio espacial personalizado','Hasta 30 horas de batería','Resistencia al agua IPX4'],
