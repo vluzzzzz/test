@@ -326,7 +326,7 @@ const Checkout=(()=>{
 
   function getEmail(){
     const u=document.getElementById('chkEmailUser')?.value.trim()||'';
-    const d=document.getElementById('chkEmailDomain')?.value||'@gmail.com';
+    const d=document.getElementById('edsValue')?.textContent||'@gmail.com';
     return u+d;
   }
   function getPhone(){
@@ -418,8 +418,8 @@ const Checkout=(()=>{
     });
     const eu=document.getElementById('chkEmailUser');
     if(eu)eu.value='';
-    const ed=document.getElementById('chkEmailDomain');
-    if(ed)ed.value='@gmail.com';
+    const ev=document.getElementById('edsValue');
+    if(ev)ev.textContent='@gmail.com';
     const ph=document.getElementById('chkPhone');
     if(ph)ph.value='';
     updatePayBtn();
@@ -467,17 +467,25 @@ const Checkout=(()=>{
     document.getElementById('checkoutClose')?.addEventListener('click',close);
     document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
     modal?.addEventListener('click',e=>{if(e.target===modal)close();});
-    ['chkName','chkEmailUser','chkEmailDomain','chkPhone','chkCity','chkAddress'].forEach(id=>{
+    ['chkName','chkEmailUser','chkPhone','chkCity','chkAddress'].forEach(id=>{
       const el=document.getElementById(id);
       if(el)el.addEventListener('input',updatePayBtn);
     });
-    document.getElementById('chkEmailDomain')?.addEventListener('change',updatePayBtn);
     document.getElementById('chkRut')?.addEventListener('input',function(){
       const s=this.selectionStart||0,c=this.value.length;
       this.value=formatRut(this.value);
       const d=this.value.length-c;
       this.setSelectionRange(s+d,s+d);
     });
+    (()=>{
+      const eds=document.getElementById('eds'),trigger=document.getElementById('edsTrigger'),menu=document.getElementById('edsMenu'),value=document.getElementById('edsValue');
+      if(!eds||!trigger||!menu)return;
+      let open=false;
+      function closeMenu(){if(!open)return;open=false;gsap.to(menu,{opacity:0,y:-6,duration:.15,ease:'power2.out',onComplete:()=>{menu.classList.remove('open');}});document.querySelector('.eds-chevron')?.classList.remove('open');}
+      trigger.addEventListener('click',e=>{e.stopPropagation();if(open){closeMenu();return;}open=true;menu.classList.add('open');gsap.set(menu,{opacity:0,y:-6});gsap.to(menu,{opacity:1,y:0,duration:.2,ease:'power2.out'});document.querySelector('.eds-chevron')?.classList.add('open');});
+      menu.querySelectorAll('.eds-opt').forEach(opt=>{opt.addEventListener('click',()=>{value.textContent=opt.dataset.value;menu.querySelectorAll('.eds-opt').forEach(o=>o.classList.remove('selected'));opt.classList.add('selected');closeMenu();updatePayBtn();});});
+      document.addEventListener('click',e=>{if(!eds.contains(e.target))closeMenu();});
+    })();
     payBtn?.addEventListener('click',pay);
     document.getElementById('checkoutWaBtn')?.addEventListener('click',e=>{e.preventDefault();close();openWhatsApp();});
   }
