@@ -1,61 +1,61 @@
-// api/create-preference.js
-// Vercel Serverless Function — crea preferencia de pago en Mercado Pago
+const { MercadoPagoConfig, Preference } = require('mercadopago');
 
-export default async function handler(req, res) {
-  // Solo POST
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  const { items, payer } = req.body;
-
-  if (!items || !items.length) {
-    return res.status(400).json({ error: 'No hay items en el carrito' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const preference = {
-      items: items.map(item => ({
-        title:       item.name,
-        quantity:    item.qty,
-        unit_price:  item.price,
-        currency_id: 'CLP',
-      })),
-      payer: payer || {},
-      back_urls: {
-        success: `${process.env.SITE_URL}/success.html`,
-        failure: `${process.env.SITE_URL}/`,
-        pending: `${process.env.SITE_URL}/`,
-      },
-      auto_return:          'approved',
-      notification_url:     `${process.env.SITE_URL}/api/webhook`,
-      statement_descriptor: 'AirPods Store',
-    };
+    const { items, customer } = req.body;
 
-    const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
-      method: 'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`,
-      },
-      body: JSON.stringify(preference),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('MP error:', data);
-      return res.status(500).json({ error: 'Error al crear preferencia', detail: data });
+    if (!items?.length) return res.status(400).json({ error: 'Carrito vacío' });
+    if (!customer?.name || !customer?.email || !customer?.phone) {
+      return res.status(400).json({ error: 'Datos del cliente incompletos' });
     }
 
-    // Devolver el link de pago
-    return res.status(200).json({
-      init_point:    data.init_point,      // producción
-      sandbox_init_point: data.sandbox_init_point, // pruebas
+    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+
+    const client = new MercadoPagoConfig({
+      accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+      options: { timeout: 10000 },
     });
 
+    const preference = new Preference(client);
+
+    const body = {
+      items: items.map(i => ({
+        title: i.name,
+        quantity: Number(i.qty),
+        unit_price: Number(i.price),
+        currency_id: 'CLP',
+      })),
+      payer: {
+        name: customer.name,
+        email: customer.email,
+        phone: { number: customer.phone },
+      },
+      back_urls: {
+        success: `${process.env.FRONTEND_URL}/success`,
+        failure: `${process.env.FRONTEND_URL}/cancel`,
+        pending: `${process.env.FRONTEND_URL}/cancel`,
+      },
+      notification_url: `${process.env.FRONTEND_URL}/api/webhook`,
+      external_reference: JSON.stringify({
+        customer,
+        items: items.map(i => ({ name: i.name, qty: i.qty, price: i.price })),
+        total,
+      }),
+      auto_return: 'approved',
+      purpose: 'wallet_purchase',
+    };
+
+    const result = await preference.create({ body });
+    res.json({ init_point: result.init_point, id: result.id });
   } catch (err) {
-    console.error('Server error:', err);
-    return res.status(500).json({ error: 'Error interno del servidor' });
+    console.error('create-preference error:', err);
+    res.status(500).json({ error: 'Error al crear preferencia' });
   }
-}
+};
