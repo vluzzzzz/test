@@ -545,7 +545,7 @@ button:focus,a:focus,div:focus{outline:none!important}
 .checkout-wa-fallback a:hover{opacity:.8}
 @media(max-width:700px){
   .checkout-body{grid-template-columns:1fr;overflow-y:auto}
-  .checkout-summary-col{padding:16px 18px;border-right:none;border-bottom:1px solid rgba(0,0,0,.06);max-height:55vh}
+  .checkout-summary-col{padding:16px 18px;border-right:none;border-bottom:1px solid rgba(0,0,0,.06);max-height:55vh;order:-1}
   .checkout-form-col{padding:16px 18px 20px}
   .checkout-header-bar{padding:14px 18px}
   .checkout-items{max-height:30vh}
