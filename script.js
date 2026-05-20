@@ -295,7 +295,6 @@ const Cart=(()=>{
   }
   function openMercadoPago(){
     if(!state.cart.length)return;
-    console.log('📦 MP desde carrito, items:', state.cart.length);
     Checkout.open();
   }
   function openWhatsApp(){
@@ -430,29 +429,24 @@ const Checkout=(()=>{
     }
     isOpen=true;
 
-    // TEST — verificar si modal está en el DOM
-    console.log('🧪 modal parent:', modal.parentElement?.tagName, modal.parentElement?.id);
-    console.log('🧪 modal connected:', modal.isConnected);
-    console.log('🧪 panel parent:', panel.parentElement?.className);
-    console.log('🧪 panel connected:', panel.isConnected);
+    renderItems();
+    totalEl.textContent=f(calcTotals());
+    updatePayBtn();
+    clearForm();
 
-    // TEST — removeAttribute + setAttribute
-    modal.removeAttribute('style');
-    panel.removeAttribute('style');
-    void document.body.offsetHeight;
-    modal.setAttribute('style', 'display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:10001; background:rgba(0,0,0,.35); justify-content:flex-end; overflow:hidden;');
-    panel.setAttribute('style', 'width:860px; height:100vh; background:#fff; display:flex; flex-direction:column;');
-    void modal.offsetHeight;
+    if(modal.parentElement!==document.body) document.body.appendChild(modal);
 
-    console.log('🧪 modal rect:', modal.getBoundingClientRect());
-    console.log('🧪 panel rect:', panel.getBoundingClientRect());
+    gsap.set(modal,{display:'flex',opacity:0});
+    gsap.set(panel,{x:'100%'});
+
+    gsap.to(modal,{opacity:1,duration:.3,ease:'power2.out'});
+    gsap.to(panel,{x:'0%',duration:.4,ease:'power3.out'});
 
     document.body.style.overflow='hidden';
     document.documentElement.style.overflow='hidden';
   }
 
   function close(){
-    console.log('❌ Checkout.close()');
     if(!isOpen)return;
     isOpen=false;
     gsap.killTweensOf(modal);gsap.killTweensOf(panel);
