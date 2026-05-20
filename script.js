@@ -1,4 +1,9 @@
 'use strict';
+const HERO_NAME_MAP = {
+  'AirPods 4ta Generación': 'AirPods 4',
+  'AirPods 3ra Generación': 'AirPods 3',
+  'Max Magnéticos': 'AirPods Max',
+};
 const PRODUCTS=[
   {id:1,name:'AirPods Pro 2',price:'',rawPrice:0,image:'images/airpods.png',bgLabel:'AIRPODS PRO 2',scale:1,offsetX:0,offsetY:0},
   {id:2,name:'AirPods 4',price:'',rawPrice:0,image:'images/airpods4.png',bgLabel:'AIRPODS 4',scale:0.8,offsetX:0,offsetY:0},
@@ -8,19 +13,21 @@ const PRICE_TIERS={
   'apple-watch-ultra-3':[{qty:1,price:29990},{qty:3,price:27990},{qty:5,price:25990},{qty:10,price:23990}],
   'apple-watch-serie-10':[{qty:1,price:29990},{qty:3,price:27990},{qty:5,price:25990},{qty:10,price:23990}],
   'apple-watch-black-ultra-2':[{qty:1,price:29990},{qty:3,price:27990},{qty:5,price:25990},{qty:10,price:23990}],
-  'airpods-4ta-generación':[{qty:1,price:15000},{qty:3,price:13500},{qty:5,price:12500},{qty:10,price:11500}],
+  'airpods-4':[{qty:1,price:15000},{qty:3,price:13500},{qty:5,price:12500},{qty:10,price:11500}],
   'airpods-pro-2':[{qty:1,price:14000},{qty:3,price:12500},{qty:5,price:11500},{qty:10,price:10500}],
-  'airpods-3ra-generación':[{qty:1,price:14000},{qty:3,price:12500},{qty:5,price:11500},{qty:10,price:10500}],
-  'batería-magsafe':[{qty:1,price:13000},{qty:3,price:11500},{qty:5,price:10500},{qty:10,price:9500}],
-  'max-magnéticos':[{qty:1,price:26990},{qty:3,price:24990},{qty:5,price:22990},{qty:10,price:20990}],
-  'cargador-lightning-completo':[{qty:1,price:5000},{qty:3,price:4500},{qty:5,price:4000},{qty:10,price:3500}],
-  'cargador-tipo-c-completo':[{qty:1,price:5000},{qty:3,price:4500},{qty:5,price:4000},{qty:10,price:3500}],
+  'airpods-3':[{qty:1,price:14000},{qty:3,price:12500},{qty:5,price:11500},{qty:10,price:10500}],
+  'bateria-magsafe':[{qty:1,price:13000},{qty:3,price:11500},{qty:5,price:10500},{qty:10,price:9500}],
+  'airpods-max':[{qty:1,price:26990},{qty:3,price:24990},{qty:5,price:22990},{qty:10,price:20990}],
+  'cargador-lightning':[{qty:1,price:5000},{qty:3,price:4500},{qty:5,price:4000},{qty:10,price:3500}],
+  'cargador-tipo-c':[{qty:1,price:5000},{qty:3,price:4500},{qty:5,price:4000},{qty:10,price:3500}],
   'cargador-samsung-45w':[{qty:1,price:6000},{qty:3,price:5500},{qty:5,price:5000},{qty:10,price:4500}],
 };
 
-
+/* === GOOGLE SHEET INTEGRATION START === */
+// URL pública del CSV (ya publicado en Google Sheets)
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTuuegzIC4CQl_Q9BPSpESwrNTBTBdKgMhlfz0Q1S0e-bPMpC_UzCeLod_dCc0e3BBUSV4ooyaQu72M/pub?output=csv';
 
+// ---------- utilidades ----------
 function slugify(str) {
   return str
     .toLowerCase()
@@ -34,7 +41,10 @@ function slugify(str) {
     .replace(/[^a-z0-9-]/g, '');
 }
 
+// CSV → array de filas → cada fila → array de celdas
 function parseCSV(text) {
+  // Split on commas that are NOT inside double quotes.
+  // This handles values like "$30,000" that contain commas.
   return text
     .trim()
     .split('\n')
@@ -45,35 +55,41 @@ function parseCSV(text) {
     });
 }
 
+/* ---------- sincronizar hoja con la app ---------- */
 function fmt(n){
   return '$' + n.toLocaleString('es-CL');
 }
 async function syncSheetToConfig() {
   console.info('🔄 Syncing Google Sheet...');
   try {
-    const res = await fetch(SHEET_URL, { cache: 'no-store' });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    const res = await fetch(SHEET_URL, { cache: 'no-store', signal: controller.signal });
+    clearTimeout(timeout);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const txt  = await res.text();
     const rows = parseCSV(txt);
       console.info(`✅ Parsed ${rows.length} rows from Google Sheet`);
 
-    const DATA_START = 3; 
+    const DATA_START = 3; // fila 4 del sheet (índice 3)
     const sheetProducts = [];
 
     for (let i = DATA_START; i < rows.length - 1; i += 2) {
-      const actRow   = rows[i];     
-      const priceRow = rows[i + 1]; 
+      const actRow   = rows[i];     // id, nombre, stock, Si/No por tramo
+      const priceRow = rows[i + 1]; // precios por tramo
 
+      // The CSV has an initial empty column, so shift indices by 1
       const rawId = actRow[1] ?? '';
       const name  = actRow[2] ?? '';
       const stock = (actRow[3] ?? '').toLowerCase().startsWith('s');
 
+      // Derive a consistent product key. Prefer the explicit ID from the sheet; if missing, generate one from the name.
       const id = rawId && rawId.trim() !== '' ? rawId : name.toLowerCase().replace(/\s+/g, '-');
 
-      if (!id) continue; 
+      if (!id) continue; // fin de la hoja
 
       const tiers = [];
-      
+      // price columns start at index 4 (1 UN) up to 13 (10 UN)
       for (let col = 4; col <= 13; col++) {
         const active   = (actRow[col] ?? '').toLowerCase().startsWith('s');
         const rawPrice = priceRow[col] ?? '';
@@ -82,7 +98,7 @@ async function syncSheetToConfig() {
         if (active && price > 0) tiers.push({ qty, price });
       }
 
-      
+      // si nadie está activo, al menos tomamos el precio de 1 UN
       if (!tiers.length && priceRow[4]) {
         const price = parseInt(priceRow[4].replace(/[^0-9]/g, ''), 10);
         tiers.push({ qty: 1, price });
@@ -91,13 +107,13 @@ async function syncSheetToConfig() {
       sheetProducts.push({ id, name, stock, tiers });
     }
 
-    
+    // ---- aplicar a las estructuras globales ----
       console.info(`📊 Processing ${sheetProducts.length} products from sheet`);
     sheetProducts.forEach(({ id, stock, tiers }) => {
-      
+      // sobrescribimos los precios por tier (usado por el modal)
       PRICE_TIERS[id] = tiers;
 
-      
+      // buscamos la(s) tarjeta(s) del producto tanto en el catálogo como en el carrusel
       const selectors = [
         `.product-card[data-id="${id}"]`,
         `.csl-slide[data-id="${id}"]`,
@@ -106,37 +122,69 @@ async function syncSheetToConfig() {
       const cards = document.querySelectorAll(selectors.join(','));
 
       cards.forEach(card => {
-        
+        // actualizar precio unitario en la tarjeta (y slide) y atributo data-price
         const priceOne = tiers.find(t => t.qty === 1);
         if (priceOne) {
           const formatted = fmt(priceOne.price);
           const priceEl = card.querySelector('.card-price') || card.querySelector('.csl-price');
           if (priceEl) priceEl.textContent = formatted;
-          
+          // actualiza atributo data-price para que populate lo use
           card.dataset.price = priceOne.price;
         }
         if (!stock) {
           card.classList.add('out-of-stock');
           card.setAttribute('aria-disabled', 'true');
+            // Cambiar botón a "SIN STOCK"
+            const outBtn = card.querySelector('.card-btn') || card.querySelector('.csl-rect');
+            if (outBtn) {
+              outBtn.textContent = 'SIN STOCK';
+              outBtn.style.background = 'var(--gray-mid)';
+              outBtn.style.color = 'var(--black)';
+              outBtn.disabled = true;
+            }
         } else {
           card.classList.remove('out-of-stock');
           card.removeAttribute('aria-disabled');
+            // Restaurar botón "Ver más"
+            const inBtn = card.querySelector('.card-btn') || card.querySelector('.csl-rect');
+            if (inBtn) {
+              inBtn.textContent = 'Ver más';
+              inBtn.style.background = '';
+              inBtn.style.color = '';
+              inBtn.disabled = false;
+            }
         }
       });
     });
 
-  
-sheetProducts.forEach(({ name, tiers }) => {
+  // ==== Actualizar precios en la lista de productos (hero) ====
+sheetProducts.forEach(({ name, tiers, stock }) => {
   const priceOne = tiers.find(t => t.qty === 1);
   if (priceOne) {
-    const prod = PRODUCTS.find(p => p.name === name);
+    const heroName = HERO_NAME_MAP[name] || name;
+    const prod = PRODUCTS.find(p => p.name === heroName);
     if (prod) {
       prod.price = fmt(priceOne.price);
       prod.rawPrice = priceOne.price;
-      
-      if (DOM.productPrice && PRODUCTS[state.current] && PRODUCTS[state.current].name === name) {
-        DOM.productPrice.textContent = fmt(priceOne.price);
-        
+      // Si el héroe está mostrando este producto, actualizar su UI
+      if (DOM.productPrice && PRODUCTS[state.current] && PRODUCTS[state.current].name === heroName) {
+        if (!stock) {
+          DOM.productPrice.textContent = 'SIN STOCK';
+          // bloquear botón "Agregar al carrito"
+          if (DOM.addToCart) {
+            DOM.addToCart.disabled = true;
+            DOM.addToCart.style.background = 'var(--gray-mid)';
+            DOM.addToCart.style.color = 'var(--black)';
+          }
+        } else {
+          DOM.productPrice.textContent = fmt(priceOne.price);
+          if (DOM.addToCart) {
+            DOM.addToCart.disabled = false;
+            DOM.addToCart.style.background = '';
+            DOM.addToCart.style.color = '';
+          }
+        }
+        // opcional: actualizar atributo data-price en la imagen si se usa
         DOM.productImg.dataset.price = priceOne.price;
       }
     }
@@ -149,25 +197,20 @@ sheetProducts.forEach(({ name, tiers }) => {
   }
 }
 
-
+/* === GOOGLE SHEET INTEGRATION END === */
 
 const FEATURES={
   'airpods-pro-2':['Cancelación activa de ruido','Audio espacial personalizado','Hasta 30 horas de batería','Resistencia al agua IPX4'],
-  'airpods-4ta-generación':['Audio adaptativo','Cancelación activa de ruido','Diseño rediseñado','Hasta 30 horas con estuche'],
-  'airpods-3ra-generación':['Audio espacial','Resistencia al agua IPX4','Carga MagSafe','Hasta 30 horas con estuche'],
+  'airpods-4':['Audio adaptativo','Cancelación activa de ruido','Diseño rediseñado','Hasta 30 horas con estuche'],
+  'airpods-3':['Audio espacial','Resistencia al agua IPX4','Carga MagSafe','Hasta 30 horas con estuche'],
   'apple-watch-ultra-3':['Caja de titanio aeroespacial','Pantalla Always-On 49mm','Hasta 60 horas de batería','GPS de doble frecuencia'],
   'apple-watch-serie-10':['Pantalla OLED más grande','Detección de apnea del sueño','Carga rápida','Diseño más delgado'],
   'apple-watch-black-ultra-2':['Acabado negro carbón','Titanio negro premium','Cristal de zafiro','Hasta 60 horas de batería'],
-  'batería-magsafe':['Carga magnética MagSafe','Compacta y liviana','Compatible iPhone 12 en adelante','Sin cables'],
-  'max-magnéticos':['Compatibles con MagSafe','Fijación magnética perfecta','Carga inalámbrica optimizada','Múltiples colores'],
-  'cargador-lightning-completo':['Cable Lightning incluido','Adaptador de corriente','Compatible iPhone/iPad/AirPods','Carga rápida'],
-  'cargador-tipo-c-completo':['Cable USB-C incluido','Compatible iPhone 15+','iPad Pro y MacBook','Carga rápida 20W'],
+  'bateria-magsafe':['Carga magnética MagSafe','Compacta y liviana','Compatible iPhone 12 en adelante','Sin cables'],
+  'airpods-max':['Compatibles con MagSafe','Fijación magnética perfecta','Carga inalámbrica optimizada','Múltiples colores'],
+  'cargador-lightning':['Cable Lightning incluido','Adaptador de corriente','Compatible iPhone/iPad/AirPods','Carga rápida'],
+  'cargador-tipo-c':['Cable USB-C incluido','Compatible iPhone 15+','iPad Pro y MacBook','Carga rápida 20W'],
   'cargador-samsung-45w':['Carga ultra rápida 45W','Compatible línea Galaxy','Cable USB-C incluido','Carga completa en ~1 hora'],
-};
-const SLIDE_KEY_MAP={
-  'airpods-4': 'airpods-4ta-generación',
-  'airpods-max': 'max-magnéticos',
-  'airpods-3': 'airpods-3ra-generación'
 };
 const PRODUCT_CONFIG={
   1:{fontSize:'22vw',productScale:1.1,productY:-15,blobYRatio:0.88,blobSpeed:0.030},
@@ -324,7 +367,29 @@ const MaskReveal=(()=>{
   return{init,refreshMobile};
 })();
 
+/* ═══════════════════════════════════════════════════════════════
+   PRODUCT MODAL — Container Transform (v3 — ghost-free)
 
+   card-container → la CAJA se expande/compacta (puede distorsionar)
+   product-hero   → el PNG vuela SIN distorsión (object-fit:contain)
+
+   FIX 1 — Ghost PNG en cierre:
+   • ppageImgEl.style.opacity='0' DENTRO del callback (antes del
+     snapshot "new"), así el browser nunca ve el PNG del modal
+     solapado con el PNG de la card en el último frame.
+   • VT names se limpian en vt.finished Y en el callback mismo.
+
+   FIX 2 — UI sync:
+   • ppage-info arranca opacity:0 pero el fade-in GSAP empieza
+     inmediatamente después de que el startViewTransition retorna
+     (simultáneo con el vuelo), no después de vt.finished.
+   • Duración 0.30s — llega a 1 cuando el PNG está en posición.
+
+   FIX 3 — Handover refinado en cierre:
+   • cardImg.src se actualiza ANTES del VT (en la img ya decodificada).
+   • card.style.visibility='' antes de que el browser tome el
+     snapshot "new", garantizando que sea visible desde frame 0.
+═══════════════════════════════════════════════════════════════ */
 const ProductModal=(()=>{
   let isOpen=false,originCard=null,originRect=null,qty=1,tiers=[],currentProduct=null,tiersOpen=false;
   let imgIndex=0,imgList=[],isTemp=false,openingImage='',isAnimImg=false;
@@ -334,7 +399,7 @@ const ProductModal=(()=>{
   const lockScroll=()=>{document.documentElement.style.overflow='hidden';document.body.style.overflow='hidden';};
   const unlockScroll=()=>{document.documentElement.style.overflow='';document.body.style.overflow='';};
 
-
+  /* Limpieza total de VT names — llamar SIEMPRE después de vt.finished */
   function cleanAllVT(card){
     const ci=getCardImg(card),pi=document.getElementById('ppageImg');
     if(card){card.style.viewTransitionName='';card.style.visibility='';}
@@ -343,22 +408,23 @@ const ProductModal=(()=>{
     if(pi){pi.style.viewTransitionName='';pi.style.transition='';pi.style.opacity='';}
   }
 
-  const PRODUCT_IMAGES={'apple-watch-ultra-3':'images/apple-watch-ultra-3.png','apple-watch-serie-10':'images/serie-10.png','apple-watch-black-ultra-2':'images/black-ultra-2.png','airpods-4ta-generacion':'images/airpods-4gen.png','airpods-pro-2':'images/airpods-pro-2.png','airpods-3ra-generacion':'images/airpods-3gen.png','bateria-magsafe':'images/bateria-magsafe.png','max-magneticos':'images/max-magneticos.png','cargador-lightning-completo':'images/cargador-lightning.png','cargador-tipo-c-completo':'images/cargador-tipo-c.png','cargador-samsung-45w':'images/cargador-samsung-45w.png'};
+  const PRODUCT_IMAGES={'apple-watch-ultra-3':'images/apple-watch-ultra-3.png','apple-watch-serie-10':'images/serie-10.png','apple-watch-black-ultra-2':'images/black-ultra-2.png','airpods-4':'images/airpods-4gen.png','airpods-pro-2':'images/airpods-pro-2.png','airpods-3':'images/airpods-3gen.png','bateria-magsafe':'images/bateria-magsafe.png','airpods-max':'images/max-magneticos.png','cargador-lightning':'images/cargador-lightning.png','cargador-tipo-c':'images/cargador-tipo-c.png','cargador-samsung-45w':'images/cargador-samsung-45w.png'};
   const slug=n=>n.toLowerCase().replace(/\s+/g,'-').replace(/[áä]/g,'a').replace(/[éë]/g,'e').replace(/[íï]/g,'i').replace(/[óö]/g,'o').replace(/[úü]/g,'u').replace(/[^a-z0-9-]/g,'');
-  const TWO=['bateria-magsafe','cargador-lightning-completo','cargador-tipo-c-completo','cargador-samsung-45w'];
-  const buildImgList=(src,key)=>{const s=slug(key),v1=PRODUCT_IMAGES[s]||src;return TWO.includes(s)?[v1,`images/${s}-v2.png`]:[v1,`images/${s}-v2.png`,`images/${s}-v3.png`];};
-  const IMG_SCALES={'apple-watch-ultra-3':[1,1,1],'apple-watch-serie-10':[1,1,.75],'apple-watch-black-ultra-2':[1,.75,.75],'airpods-4ta-generacion':[1,1,1.3],'airpods-pro-2':[1,1,1],'airpods-3ra-generacion':[1,1,1],'bateria-magsafe':[1,1,1],'max-magneticos':[1,1,1],'cargador-lightning-completo':[1,1.4,1],'cargador-tipo-c-completo':[1,1,1],'cargador-samsung-45w':[1,1,1]};
+  const TWO=['bateria-magsafe','cargador-lightning','cargador-tipo-c','cargador-samsung-45w'];
+  const FILE_PREFIX={'airpods-4':'airpods-4ta-generacion','airpods-3':'airpods-3ra-generacion','airpods-max':'max-magneticos','cargador-lightning':'cargador-lightning-completo','cargador-tipo-c':'cargador-tipo-c-completo'};
+  const buildImgList=(src,key)=>{const s=slug(key),fk=FILE_PREFIX[s]||s,v1=PRODUCT_IMAGES[s]||src;return TWO.includes(s)?[v1,`images/${fk}-v2.png`]:[v1,`images/${fk}-v2.png`,`images/${fk}-v3.png`];};
+  const IMG_SCALES={'apple-watch-ultra-3':[1,1,1],'apple-watch-serie-10':[1,1,.75],'apple-watch-black-ultra-2':[1,.75,.75],'airpods-4':[1,1,1.3],'airpods-pro-2':[1,1,1],'airpods-3':[1,1,1],'bateria-magsafe':[1,1,1],'airpods-max':[1,1,1],'cargador-lightning':[1,1.4,1],'cargador-tipo-c':[1,1,1],'cargador-samsung-45w':[1,1,1]};
 
   function renderDots(){const w=document.getElementById('ppageImgDots');if(!w)return;w.innerHTML=imgList.map((_,i)=>`<div class="ppage-img-dot${i===imgIndex?' active':''}"></div>`).join('');w.querySelectorAll('.ppage-img-dot').forEach((d,i)=>d.addEventListener('click',()=>goToImg(i)));}
   function updateArrow(){const b=document.getElementById('ppageImgNext');if(b)b.classList.toggle('hidden',isTemp||imgIndex>=imgList.length-1);}
   function renderTempThumbs(){const w=document.getElementById('ppageThumbs');if(!w)return;w.innerHTML='';imgList.forEach((src,i)=>{const t=document.createElement('div');t.className='ppage-thumb';t.dataset.index=i;t.innerHTML=`<img src="${src}" alt="">`;gsap.set(t,{opacity:0,y:20,scale:.8});w.appendChild(t);gsap.to(t,{opacity:1,y:0,scale:1,duration:.35,delay:i*.06,ease:'back.out(1.5)'});t.addEventListener('click',()=>activateFromTemp(i));});}
-  function activateFromTemp(ni){isTemp=false;const ie=document.getElementById('ppageImg'),iw=document.getElementById('ppageImgWrap'),w=document.getElementById('ppageThumbs');w.innerHTML='';for(let i=0;i<ni;i++)addThumb(imgList[i],i);imgIndex=ni;gsap.to(iw,{opacity:0,scale:.88,duration:.25,ease:'power3.in',onComplete:()=>{ie.src=imgList[imgIndex];const s=(IMG_SCALES[slug(currentProduct.name)]??[1,1,1])[imgIndex]??1;document.getElementById('ppageImgWrap')?.style.setProperty('--ppage-img-scale',s);gsap.fromTo(iw,{opacity:0,scale:.88},{opacity:1,scale:1,duration:.4,ease:'power3.out'});}});renderDots();updateArrow();}
+  function activateFromTemp(ni){isTemp=false;const ie=document.getElementById('ppageImg'),iw=document.getElementById('ppageImgWrap'),w=document.getElementById('ppageThumbs');w.innerHTML='';for(let i=0;i<ni;i++)addThumb(imgList[i],i);imgIndex=ni;gsap.to(iw,{opacity:0,scale:.88,duration:.25,ease:'power3.in',onComplete:()=>{                    ie.src=imgList[imgIndex];const s=(IMG_SCALES[currentProduct.key]??[1,1,1])[imgIndex]??1;document.getElementById('ppageImgWrap')?.style.setProperty('--ppage-img-scale',s);gsap.fromTo(iw,{opacity:0,scale:.88},{opacity:1,scale:1,duration:.4,ease:'power3.out'});}});renderDots();updateArrow();}
   function addThumb(src,fi){const w=document.getElementById('ppageThumbs');if(!w||w.querySelector(`[data-index="${fi}"]`))return;const t=document.createElement('div');t.className='ppage-thumb';t.dataset.index=fi;t.innerHTML=`<img src="${src}" alt="">`;gsap.set(t,{opacity:0,y:20,scale:.8});w.appendChild(t);gsap.to(t,{opacity:1,y:0,scale:1,duration:.35,ease:'back.out(1.5)'});t.addEventListener('click',()=>goToImg(fi));}
   function goToImg(ni){
     if(ni===imgIndex||isTemp||isAnimImg||ni<0||ni>=imgList.length)return;
     const ie=document.getElementById('ppageImg'),iw=document.getElementById('ppageImgWrap'),dir=ni>imgIndex?1:-1,pi=ie.src,pI=imgIndex,pre=new Image();
     pre.src=imgList[ni];
-    function go(){isAnimImg=true;if(dir>0)addThumb(pi,pI);else{const w=document.getElementById('ppageThumbs');if(w)w.querySelectorAll('.ppage-thumb').forEach(t=>{if(Number(t.dataset.index)>=ni)gsap.to(t,{opacity:0,y:20,scale:.8,duration:.25,ease:'power2.in',onComplete:()=>t.remove()});});}imgIndex=ni;gsap.to(iw,{x:dir>0?-60:60,opacity:0,scale:.88,duration:.3,ease:'power3.in',onComplete:()=>{ie.src=imgList[imgIndex];const s=(IMG_SCALES[slug(currentProduct?.name||'')]??[1,1,1])[imgIndex]??1;document.getElementById('ppageImgWrap')?.style.setProperty('--ppage-img-scale',s);gsap.fromTo(iw,{x:dir>0?80:-80,opacity:0,scale:.88},{x:0,opacity:1,scale:1,duration:.45,ease:'power3.out',onComplete:()=>{isAnimImg=false;}});}});renderDots();updateArrow();}
+    function go(){isAnimImg=true;if(dir>0)addThumb(pi,pI);else{const w=document.getElementById('ppageThumbs');if(w)w.querySelectorAll('.ppage-thumb').forEach(t=>{if(Number(t.dataset.index)>=ni)gsap.to(t,{opacity:0,y:20,scale:.8,duration:.25,ease:'power2.in',onComplete:()=>t.remove()});});}imgIndex=ni;gsap.to(iw,{x:dir>0?-60:60,opacity:0,scale:.88,duration:.3,ease:'power3.in',onComplete:()=>{ie.src=imgList[imgIndex];const s=(IMG_SCALES[currentProduct?.key]??[1,1,1])[imgIndex]??1;document.getElementById('ppageImgWrap')?.style.setProperty('--ppage-img-scale',s);gsap.fromTo(iw,{x:dir>0?80:-80,opacity:0,scale:.88},{x:0,opacity:1,scale:1,duration:.45,ease:'power3.out',onComplete:()=>{isAnimImg=false;}});}});renderDots();updateArrow();}
     if(pre.complete)go();else{pre.onload=go;pre.onerror=go;}
   }
   function resetCarousel(src,name,key){imgIndex=0;imgList=buildImgList(src,key||name);const w=document.getElementById('ppageThumbs');if(w)w.innerHTML='';document.getElementById('ppageImgWrap')?.style.setProperty('--ppage-img-scale','1');renderDots();updateArrow();}
@@ -382,6 +448,7 @@ const ProductModal=(()=>{
     tiers = PRICE_TIERS[key] || [{ qty: 1, price: Number(card.dataset.price) }];
     currentProduct = {
       id: 'cat-' + (card.dataset.id || ''),
+      key: key,
       name: card.dataset.name,
       price: fmt(tiers[0]?.price ?? card.dataset.price),
       rawPrice: tiers[0]?.price ?? Number(card.dataset.price),
@@ -400,17 +467,18 @@ const ProductModal=(()=>{
     if(card.classList.contains('csl-slide')){isTemp=true;updateArrow();renderTempThumbs();}
   }
 
-
+  /* ════════════════════════════════════════════
+     OPEN — Container Transform
+     ════════════════════════════════════════════ */
   function open(card){
     if(isOpen)return;
     isOpen=true;originCard=card;qty=1;tiersOpen=false;
-    const rawKey = card.dataset.id;
-    const key = SLIDE_KEY_MAP[rawKey] || rawKey;
+    const key = card.dataset.id;
     populate(card,key);
     originRect=card.getBoundingClientRect();
     const cardImg=getCardImg(card),ppageImgEl=document.getElementById('ppageImg'),ppageInfo=document.getElementById('ppageInfo');
 
-
+    /* ── FALLBACK: mobile / sin VT API ── */
     if(!document.startViewTransition||window.innerWidth<=900){
       const cx=(originRect.left+originRect.width/2)/window.innerWidth*100,cy=(originRect.top+originRect.height/2)/window.innerHeight*100;
       ppage.style.cssText=`display:flex;flex-direction:column;position:fixed;top:0;right:0;bottom:0;left:0;width:100vw;max-width:100vw;height:100dvh;margin:0;padding:0;border-radius:0;overflow:hidden;transform-origin:${cx.toFixed(2)}% ${cy.toFixed(2)}%;`;
@@ -421,24 +489,34 @@ const ProductModal=(()=>{
       return;
     }
 
-  
+    /* ── VT APERTURA ──
+       OLD state: card (card-container) + cardImg (product-hero)
+       NEW state: ppage (card-container) + ppageImgEl (product-hero)
+    */
+
+    /* UI empieza grande y desplazada — como si viniera del estado fullscreen.
+       Se achica y baja a su posición final mientras la caja termina de expandirse. */
     if(ppageInfo){ppageInfo.style.opacity='0';ppageInfo.style.transform='scale(1.28) translateY(32px)';}
     const ppageBack=document.getElementById('ppageBack');
     if(ppageBack){ppageBack.style.opacity='0';ppageBack.style.transform='scale(1.04) translateY(-10px)';}
 
+    /* Asignar nombres al OLD state */
     card.style.viewTransitionName='card-container';
     if(cardImg){cardImg.style.transition='none';void cardImg.offsetHeight;cardImg.style.viewTransitionName='product-hero';}
 
     const vt=document.startViewTransition(()=>{
+      /* Quitar de la card */
       card.style.viewTransitionName='';
       if(cardImg){cardImg.style.viewTransitionName='';cardImg.style.transition='';}
       card.style.visibility='hidden';
 
+      /* Montar modal fullscreen */
       ppage.style.display='flex';ppage.style.position='fixed';ppage.style.inset='0';
       ppage.style.width='100vw';ppage.style.height='100dvh';
       ppage.style.margin='0';ppage.style.padding='0';ppage.style.borderRadius='0';ppage.style.overflow='hidden';
       ppage.style.transform='';ppage.style.transformOrigin='';
 
+      /* Asignar nombres al NEW state */
       ppage.style.viewTransitionName='card-container';
       ppageImgEl.style.transition='none';
       ppageImgEl.style.viewTransitionName='product-hero';
@@ -447,9 +525,12 @@ const ProductModal=(()=>{
       lockScroll();
     });
 
+    /* FIX 2: Fade-in del UI SIMULTANEO al vuelo — no esperar vt.finished */
     vt.ready.then(()=>{
+      /* ppageInfo: el contenedor sube a su posición (wrapper) */
       if(ppageInfo) gsap.to(ppageInfo,{opacity:1,scale:1,y:0,duration:.38,ease:'power3.out'});
 
+      /* Elementos internos: stagger individual — cada uno entra escalonado */
       const els=[
         ppageInfo?.querySelector('.ppage-name'),
         ppageInfo?.querySelector('.ppage-desc'),
@@ -458,15 +539,17 @@ const ProductModal=(()=>{
         document.getElementById('ppageAccordions'),
       ].filter(Boolean);
 
+      /* Cada elemento parte invisible y desplazado abajo */
       gsap.set(els,{opacity:0,y:14});
       gsap.to(els,{
         opacity:1, y:0,
         duration:.30,
         ease:'power2.out',
-        stagger:.06,     
-        delay:.10,        
+        stagger:.06,        /* 60ms entre cada elemento */
+        delay:.10,          /* empieza cuando la caja ya casi llegó */
       });
 
+      /* Botón Volver */
       if(ppageBack) gsap.to(ppageBack,{opacity:1,scale:1,y:0,duration:.24,ease:'power2.out',delay:.06});
     }).catch(()=>{
       if(ppageInfo){ppageInfo.style.opacity='1';ppageInfo.style.transform='';}
@@ -475,8 +558,10 @@ const ProductModal=(()=>{
 
     vt.finished
       .then(()=>{
+        /* Limpiar VT names del modal */
         ppage.style.viewTransitionName='';
         ppageImgEl.style.viewTransitionName='';ppageImgEl.style.transition='';
+        /* Restaurar por si el fade-in no completó */
         if(ppageInfo){ppageInfo.style.opacity='1';ppageInfo.style.transform='';}
         if(ppageBack){ppageBack.style.opacity='1';ppageBack.style.transform='';}
       })
@@ -487,16 +572,21 @@ const ProductModal=(()=>{
       });
   }
 
-
+  /* ════════════════════════════════════════════
+     CLOSE — Container compacta a card (ghost-free)
+     ════════════════════════════════════════════ */
   function close(){
     if(!isOpen||!originRect)return;
     const card=originCard,cardImg=getCardImg(card),ppageImgEl=document.getElementById('ppageImg'),iw=document.getElementById('ppageImgWrap');
 
+    /* ¿Es una card normal (no slide de carrusel)? */
     const isNormalCard=!card?.classList.contains('csl-slide');
 
+    /* Limpiar transforms residuales de GSAP */
     gsap.killTweensOf(iw);gsap.killTweensOf(ppageImgEl);
     if(iw){iw.style.transform='';iw.style.opacity='';iw.style.setProperty('--ppage-img-scale','1');}
 
+    /* ── FALLBACK ── */
     if(!document.startViewTransition||window.innerWidth<=900){
       let r=originRect;if(card){const f=card.getBoundingClientRect();if(f.width>0)r=f;}
       const cx=(r.left+r.width/2)/window.innerWidth*100,cy=(r.top+r.height/2)/window.innerHeight*100;
@@ -525,10 +615,16 @@ const ProductModal=(()=>{
       if(cardImg&&closingImgSrc)cardImg.src=closingImgSrc;
       void ppageImgEl?.offsetHeight;
 
-
+      /* Para cards normales: los elementos de UI (texto, botones, thumbs)
+         reciben su propio VT name — el browser los extrae del snapshot de ppage.
+         El "hueco" que dejan en ppage es blanco (= fondo del modal) → seamless.
+         CSS los desvanece gradualmente. ppage (card-container) no se toca: 
+         el fondo blanco contrae completo sin fade. */
       if(isNormalCard) document.documentElement.classList.add('vt-closing-card');
 
-    
+      /* Sin VT names en el UI. Todo dentro del snapshot de card-container.
+         El OLD state (contenido) hace fade via CSS. El grupo tiene
+         background:#fff → caja siempre sólida aunque el contenido desaparezca. */
       ppage.style.viewTransitionName='card-container';
       ppageImgEl.style.viewTransitionName='product-hero';
 
@@ -581,6 +677,7 @@ const ProductModal=(()=>{
     document.getElementById('ppageTierSelected')?.addEventListener('click',toggleTiers);
     document.getElementById('ppageImgNext')?.addEventListener('click',()=>goToImg(imgIndex+1));
 
+    /* ── Swipe en mobile sobre el panel de imagen ── */
     const panel=document.getElementById('ppageImgPanel');
     if(panel){
       let tx=0,ty=0;
@@ -633,10 +730,13 @@ const Carousel3D=(()=>{
 })();
 document.querySelectorAll('.porque-card').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('flipped')));
 document.addEventListener('DOMContentLoaded', async () => {
+  // 1️⃣ cargar precios y stock desde Google Sheet
   await syncSheetToConfig();
 
+// Refresh sheet data every minute to keep prices and stock up‑to‑date
 setInterval(syncSheetToConfig, 60000);
 
+  // 2️⃣ iniciar la UI (solo después de que los datos estén listos)
   ProductNav.init();Cart.init();CartButton.init();MaskReveal.init();
   ProductsSection.init();NavScroll.init();ProductModal.init();Carousel3D.init();
 
