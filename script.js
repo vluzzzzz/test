@@ -430,19 +430,17 @@ const Checkout=(()=>{
     }
     isOpen=true;
 
-    // TEST — dimensiones explicitas
-    modal.style.display = 'flex';
-    modal.style.height = '100vh';
-    modal.style.width = '100vw';
-    panel.style.height = '100vh';
-    panel.style.width = '860px';
+    // TEST — cssText para resetear TODO
+    modal.style.cssText = '';
+    panel.style.cssText = '';
+    void document.body.offsetHeight;
+    modal.style.cssText = 'display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:10001; background:rgba(0,0,0,.35); justify-content:flex-end; overflow:hidden;';
+    panel.style.cssText = 'width:860px; height:100vh; background:#fff; display:flex; flex-direction:column;';
     void modal.offsetHeight;
 
-    console.log('🧪 panel rect:', panel.getBoundingClientRect());
     console.log('🧪 modal rect:', modal.getBoundingClientRect());
+    console.log('🧪 panel rect:', panel.getBoundingClientRect());
     console.log('🧪 cart rect:', DOM.cartDrawer.getBoundingClientRect());
-    console.log('🧪 panel comp width:', getComputedStyle(panel).width);
-    console.log('🧪 panel comp height:', getComputedStyle(panel).height);
 
     document.body.style.overflow='hidden';
     document.documentElement.style.overflow='hidden';
