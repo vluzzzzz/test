@@ -42,7 +42,6 @@ function slugify(str) {
 
 function parseCSV(text) {
   return text
-  // Split on commas that are NOT inside double quotes.
   return text
     .trim()
     .split('\n')
@@ -133,7 +132,6 @@ async function syncSheetToConfig() {
       });
     });
 
-// ==== Actualizar precios en la lista de productos (hero) ====
 sheetProducts.forEach(({ name, tiers, stock }) => {
   const priceOne = tiers.find(t => t.qty === 1);
   if (priceOne) {
