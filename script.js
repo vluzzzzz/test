@@ -295,7 +295,8 @@ const Cart=(()=>{
   }
   function openMercadoPago(){
     if(!state.cart.length)return;
-    Checkout.forceOpen();
+    console.log('📦 MP desde carrito, items:', state.cart.length);
+    Checkout.open();
   }
   function openWhatsApp(){
     if(!state.cart.length)return;
@@ -423,8 +424,14 @@ const Checkout=(()=>{
   }
 
   function open(){
-    if(isOpen)return;
+    if(isOpen){
+      console.log('💡 Checkout trabado, reseteando...');
+      isOpen=false;
+      gsap.killTweensOf(modal);gsap.killTweensOf(panel);
+      modal.style.display='none';
+    }
     isOpen=true;
+    console.log('💳 Checkout.open()');
     renderItems();
     gsap.killTweensOf(modal);gsap.killTweensOf(panel);
     gsap.set(modal,{display:'flex',opacity:0});
@@ -437,36 +444,8 @@ const Checkout=(()=>{
     updatePayBtn();
   }
 
-  function forceOpen(){
-    isOpen=false;
-    modal.style.display='none';
-    gsap.killTweensOf(modal);gsap.killTweensOf(panel);
-    gsap.set(panel,{clearProps:'all'});
-    open();
-  }
-
-  function openFromWidth(startWidth){
-    if(isOpen)return;
-    isOpen=true;
-    renderItems();
-    const endWidth = Math.min(860, window.innerWidth);
-    gsap.killTweensOf(modal);gsap.killTweensOf(panel);
-    gsap.set(modal,{display:'flex',opacity:0});
-    gsap.set(panel,{x:'100%'});
-    void modal.offsetHeight;
-    gsap.fromTo(panel,
-      {width:startWidth,maxWidth:startWidth,x:'100%'},
-      {x:'0%',width:endWidth,maxWidth:endWidth,duration:0.5,ease:'power3.out',
-       onComplete:()=>{gsap.set(panel,{clearProps:'width,maxWidth'});}}
-    );
-    gsap.to(modal,{opacity:1,duration:0.2,ease:'power2.out'});
-    document.body.style.overflow='hidden';
-    document.documentElement.style.overflow='hidden';
-    clearForm();
-    updatePayBtn();
-  }
-
   function close(){
+    console.log('❌ Checkout.close()');
     if(!isOpen)return;
     isOpen=false;
     gsap.killTweensOf(modal);gsap.killTweensOf(panel);
@@ -538,7 +517,7 @@ const Checkout=(()=>{
     window.open(`https://wa.me/56942348587?text=${encodeURIComponent(msg)}`,'_blank');
   }
 
-  return{init,open,close,openFromWidth,renderItems,updatePayBtn,forceOpen};
+  return{init,open,close};
 })();
 
 function setHeroAddToCartState(inStock){
