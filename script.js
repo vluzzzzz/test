@@ -453,9 +453,14 @@ const Checkout=(()=>{
     const endWidth = Math.min(860, window.innerWidth);
     gsap.killTweensOf(modal);gsap.killTweensOf(panel);
     gsap.set(modal,{display:'flex',opacity:0});
-    gsap.set(panel,{x:'100%',width:startWidth,maxWidth:startWidth});
+    gsap.set(panel,{x:'100%'});
+    void modal.offsetHeight;
+    gsap.fromTo(panel,
+      {width:startWidth,maxWidth:startWidth,x:'100%'},
+      {x:'0%',width:endWidth,maxWidth:endWidth,duration:0.5,ease:'power3.out',
+       onComplete:()=>{gsap.set(panel,{clearProps:'width,maxWidth'});}}
+    );
     gsap.to(modal,{opacity:1,duration:0.2,ease:'power2.out'});
-    gsap.to(panel,{x:'0%',width:endWidth,maxWidth:endWidth,duration:0.5,ease:'power3.out',onComplete:()=>{gsap.set(panel,{clearProps:'width,maxWidth'});}});
     document.body.style.overflow='hidden';
     document.documentElement.style.overflow='hidden';
     clearForm();
