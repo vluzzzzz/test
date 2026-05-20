@@ -1,4 +1,5 @@
 'use strict';
+console.log('%c[SCRIPT v2] script.js cargado correctamente', 'color:#0f0;font-size:16px;font-weight:bold');
 const HERO_NAME_MAP = {
   'AirPods 4ta Generación': 'AirPods 4',
   'AirPods 3ra Generación': 'AirPods 3',
@@ -27,6 +28,8 @@ const PRICE_TIERS={
 
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTuuegzIC4CQl_Q9BPSpESwrNTBTBdKgMhlfz0Q1S0e-bPMpC_UzCeLod_dCc0e3BBUSV4ooyaQu72M/pub?output=csv';
 
+function fmt(n){ return '$'+n.toLocaleString('es-CL'); }
+
 function slugify(str) {
   return str
     .toLowerCase()
@@ -42,8 +45,6 @@ function slugify(str) {
 
 function parseCSV(text) {
   return text
-  // Split on commas that are NOT inside double quotes.
-  return text
     .trim()
     .split('\n')
     .map(row => {
@@ -54,38 +55,46 @@ function parseCSV(text) {
 }
 
 async function syncSheetToConfig() {
-  console.info('🔄 Syncing Google Sheet...');
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(SHEET_URL, { cache: 'no-store', signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const txt  = await res.text();
-    const rows = parseCSV(txt);
-      console.info(`✅ Parsed ${rows.length} rows from Google Sheet`);
+    const txt = await res.text();
+    const allRows = parseCSV(txt);
 
-    const DATA_START = 3;
+    const rows = allRows.filter(r => r.some(c => c.trim() !== ''));
+    console.info(`[SYNC] raw=${allRows.length} filtered=${rows.length}`);
+
+    const headerIdx = rows.findIndex(r => r[1] === 'ID' || r[1]?.includes('ID'));
+    const DATA_START = headerIdx >= 0 ? headerIdx + 1 : 3;
+
+    console.info(`[SYNC] header at row ${headerIdx}, data starts at ${DATA_START}`);
+    console.info(`[SYNC] row[${DATA_START}]=`, rows[DATA_START]?.slice(0, 6));
+    console.info(`[SYNC] row[${DATA_START+1}]=`, rows[DATA_START+1]?.slice(0, 6));
+
     const sheetProducts = [];
 
     for (let i = DATA_START; i < rows.length - 1; i += 2) {
-      const actRow   = rows[i];
+      const actRow = rows[i];
       const priceRow = rows[i + 1];
+      if (!actRow || !priceRow) break;
 
       const rawId = actRow[1] ?? '';
-      const name  = actRow[2] ?? '';
+      const name = actRow[2] ?? '';
+      if (!rawId && !name) break;
+
       const stock = (actRow[3] ?? '').toLowerCase().startsWith('s');
-
       const id = rawId && rawId.trim() !== '' ? rawId : name.toLowerCase().replace(/\s+/g, '-');
-
-      if (!id) continue;
+      if (!id) break;
 
       const tiers = [];
       for (let col = 4; col <= 13; col++) {
-        const active   = (actRow[col] ?? '').toLowerCase().startsWith('s');
+        const active = (actRow[col] ?? '').toLowerCase().startsWith('s');
         const rawPrice = priceRow[col] ?? '';
-        const price    = parseInt(rawPrice.replace(/[^0-9]/g, ''), 10) || 0;
-      const qty = col - 3;
+        const price = parseInt(rawPrice.replace(/[^0-9]/g, ''), 10) || 0;
+        const qty = col - 3;
         if (active && price > 0) tiers.push({ qty, price });
       }
 
@@ -94,8 +103,11 @@ async function syncSheetToConfig() {
         tiers.push({ qty: 1, price });
       }
 
+      console.info(`[SYNC] ${id}: ${tiers.length} tiers, stock=${stock}, price1=${tiers[0]?.price}`);
       sheetProducts.push({ id, name, stock, tiers });
     }
+
+    console.info(`[SYNC] total products=${sheetProducts.length}`);
 
     sheetProducts.forEach(({ id, stock, tiers }) => {
       PRICE_TIERS[id] = tiers;
@@ -106,6 +118,8 @@ async function syncSheetToConfig() {
         `.card[data-id="${id}"]`
       ];
       const cards = document.querySelectorAll(selectors.join(','));
+
+      console.info(`[SYNC] id=${id} -> cards found=${cards.length}`);
 
       cards.forEach(card => {
         const priceOne = tiers.find(t => t.qty === 1);
@@ -118,46 +132,39 @@ async function syncSheetToConfig() {
         if (!stock) {
           card.classList.add('out-of-stock');
           card.setAttribute('aria-disabled', 'true');
-            const outBtn = card.querySelector('.card-btn') || card.querySelector('.csl-rect');
-            if (outBtn) {
-              outBtn.textContent = 'SIN STOCK';
-            }
+          const outBtn = card.querySelector('.card-btn') || card.querySelector('.csl-rect');
+          if (outBtn) outBtn.textContent = 'SIN STOCK';
         } else {
           card.classList.remove('out-of-stock');
           card.removeAttribute('aria-disabled');
-            const inBtn = card.querySelector('.card-btn') || card.querySelector('.csl-rect');
-            if (inBtn) {
-              inBtn.textContent = 'Ver más';
-            }
+          const inBtn = card.querySelector('.card-btn') || card.querySelector('.csl-rect');
+          if (inBtn) inBtn.textContent = 'Ver más';
         }
       });
     });
 
-// ==== Actualizar precios en la lista de productos (hero) ====
-sheetProducts.forEach(({ name, tiers, stock }) => {
-  const priceOne = tiers.find(t => t.qty === 1);
-  if (priceOne) {
-    const heroName = HERO_NAME_MAP[name] || name;
-    const prod = PRODUCTS.find(p => p.name === heroName);
-    if (prod) {
-      prod.price = fmt(priceOne.price);
-      prod.rawPrice = priceOne.price;
-      HERO_STOCK[heroName] = stock;
-      if (DOM.productPrice && PRODUCTS[state.current] && PRODUCTS[state.current].name === heroName) {
-        DOM.productPrice.textContent = stock ? fmt(priceOne.price) : 'SIN STOCK';
-        DOM.productImg.dataset.price = priceOne.price;
-        setHeroAddToCartState(stock);
+    sheetProducts.forEach(({ name, tiers, stock }) => {
+      const priceOne = tiers.find(t => t.qty === 1);
+      if (priceOne) {
+        const heroName = HERO_NAME_MAP[name] || name;
+        const prod = PRODUCTS.find(p => p.name === heroName);
+        if (prod) {
+          prod.price = fmt(priceOne.price);
+          prod.rawPrice = priceOne.price;
+          HERO_STOCK[heroName] = stock;
+          if (DOM.productPrice && PRODUCTS[state.current] && PRODUCTS[state.current].name === heroName) {
+            DOM.productPrice.textContent = stock ? fmt(priceOne.price) : 'SIN STOCK';
+            DOM.productImg.dataset.price = priceOne.price;
+            setHeroAddToCartState(stock);
+          }
+        }
       }
-    }
-  }
-});
-        console.info('✅ syncSheetToConfig completed');
-      document.body.classList.add('sheet-ready');
+    });
+    document.body.classList.add('sheet-ready');
   } catch (err) {
     console.error('❗ No se pudo cargar la hoja de precios/stock:', err);
   }
 }
-
 
 
 const FEATURES={
