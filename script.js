@@ -1,5 +1,4 @@
 'use strict';
-console.log('%c[SCRIPT v2] script.js cargado correctamente', 'color:#0f0;font-size:16px;font-weight:bold');
 const HERO_NAME_MAP = {
   'AirPods 4ta Generación': 'AirPods 4',
   'AirPods 3ra Generación': 'AirPods 3',
@@ -65,14 +64,9 @@ async function syncSheetToConfig() {
     const allRows = parseCSV(txt);
 
     const rows = allRows.filter(r => r.some(c => c.trim() !== ''));
-    console.info(`[SYNC] raw=${allRows.length} filtered=${rows.length}`);
 
     const headerIdx = rows.findIndex(r => r[1] === 'ID' || r[1]?.includes('ID'));
     const DATA_START = headerIdx >= 0 ? headerIdx + 1 : 3;
-
-    console.info(`[SYNC] header at row ${headerIdx}, data starts at ${DATA_START}`);
-    console.info(`[SYNC] row[${DATA_START}]=`, rows[DATA_START]?.slice(0, 6));
-    console.info(`[SYNC] row[${DATA_START+1}]=`, rows[DATA_START+1]?.slice(0, 6));
 
     const sheetProducts = [];
 
@@ -103,11 +97,8 @@ async function syncSheetToConfig() {
         tiers.push({ qty: 1, price });
       }
 
-      console.info(`[SYNC] ${id}: ${tiers.length} tiers, stock=${stock}, price1=${tiers[0]?.price}`);
       sheetProducts.push({ id, name, stock, tiers });
     }
-
-    console.info(`[SYNC] total products=${sheetProducts.length}`);
 
     sheetProducts.forEach(({ id, stock, tiers }) => {
       PRICE_TIERS[id] = tiers;
@@ -118,8 +109,6 @@ async function syncSheetToConfig() {
         `.card[data-id="${id}"]`
       ];
       const cards = document.querySelectorAll(selectors.join(','));
-
-      console.info(`[SYNC] id=${id} -> cards found=${cards.length}`);
 
       cards.forEach(card => {
         const priceOne = tiers.find(t => t.qty === 1);
