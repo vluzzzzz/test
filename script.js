@@ -425,41 +425,27 @@ const Checkout=(()=>{
 
   function open(){
     if(isOpen){
-      console.log('💡 Checkout trabado, reseteando...');
       isOpen=false;
-      gsap.killTweensOf(modal);gsap.killTweensOf(panel);
       modal.style.display='none';
     }
     isOpen=true;
-    console.log('💳 Checkout.open()');
-    renderItems();
 
-    // TEST: mostrar modal y detectar si algo lo tapa
+    // TEST — dimensiones explicitas
     modal.style.display = 'flex';
-    modal.style.outline = '5px solid red';
-    modal.style.outlineOffset = '-5px';
-    modal.style.opacity = '1';
-    panel.style.transform = 'translateX(0%)';
-    panel.style.outline = '3px solid blue';
-    // Forzar reflow
+    modal.style.height = '100vh';
+    modal.style.width = '100vw';
+    panel.style.height = '100vh';
+    panel.style.width = '860px';
     void modal.offsetHeight;
-    console.log('🔍 TEST — modal z-index:', getComputedStyle(modal).zIndex);
-    console.log('🔍 TEST — panel rect:', panel.getBoundingClientRect());
-    console.log('🔍 TEST — cart z-index:', getComputedStyle(DOM.cartDrawer).zIndex);
-    console.log('🔍 TEST — cart rect:', DOM.cartDrawer.getBoundingClientRect());
-    // Ver si algún elemento está encima: buscar el z-index más alto
-    const all = document.querySelectorAll('*');
-    let maxZ = 0, maxEl = null;
-    all.forEach(el => {
-      const z = parseInt(getComputedStyle(el).zIndex);
-      if(z > maxZ){ maxZ = z; maxEl = el; }
-    });
-    console.log('🔍 TEST — elemento con mayor z-index:', maxZ, maxEl?.tagName, maxEl?.className);
+
+    console.log('🧪 panel rect:', panel.getBoundingClientRect());
+    console.log('🧪 modal rect:', modal.getBoundingClientRect());
+    console.log('🧪 cart rect:', DOM.cartDrawer.getBoundingClientRect());
+    console.log('🧪 panel comp width:', getComputedStyle(panel).width);
+    console.log('🧪 panel comp height:', getComputedStyle(panel).height);
 
     document.body.style.overflow='hidden';
     document.documentElement.style.overflow='hidden';
-    clearForm();
-    updatePayBtn();
   }
 
   function close(){
