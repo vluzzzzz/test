@@ -281,8 +281,8 @@ const Cart=(()=>{
     gsap.to(DOM.cartDrawer,{x:'100%',duration:0.45,ease:'power4.in',onComplete:()=>{isOpen=false;DOM.cartDrawer.style.zIndex='';DOM.cartDrawer.style.visibility='';DOM.cartDrawer.style.display='';document.body.style.overflow='';document.documentElement.style.overflow='';}});
   }
   function addItem(product){const p={...product,key:product.key||null};const ex=state.cart.find(i=>String(i.product.id)===String(p.id));if(ex)ex.qty++;else state.cart.push({product:p,qty:1});render();updateBadge();}
-  function removeItem(id){const s=String(id);state.cart=state.cart.filter(i=>String(i.product.id)!==s);render();updateBadge();}
-  function changeQty(id,delta){const s=String(id);const item=state.cart.find(i=>String(i.product.id)===s);if(!item)return;item.qty=Math.max(0,item.qty+delta);if(item.qty===0)removeItem(id);else{render();updateBadge();const el=DOM.cartItems.querySelector(`.cart-item[data-id="${id}"] .cart-item-qty span`);if(el)gsap.fromTo(el,{scale:1.45,opacity:.5},{scale:1,opacity:1,duration:.25,ease:'back.out(2)'});}}
+  function removeItem(id,skipRender){const s=String(id);state.cart=state.cart.filter(i=>String(i.product.id)!==s);if(!skipRender){render();updateBadge();}}
+  function changeQty(id,delta,skipRender){const s=String(id);const item=state.cart.find(i=>String(i.product.id)===s);if(!item)return;item.qty=Math.max(0,item.qty+delta);if(item.qty===0)removeItem(id,skipRender);else{if(!skipRender){render();updateBadge();const el=DOM.cartItems.querySelector(`.cart-item[data-id="${id}"] .cart-item-qty span`);if(el)gsap.fromTo(el,{scale:1.45,opacity:.5},{scale:1,opacity:1,duration:.25,ease:'back.out(2)'});}}}
   function updateBadge(){const t=state.cart.reduce((s,i)=>s+i.qty,0);DOM.cartCount.textContent=t;DOM.cartCount.classList.toggle('visible',t>0);}
   const fmt=n=>'$'+n.toLocaleString('es-CL');
   function render(){
@@ -321,13 +321,21 @@ const Checkout=(()=>{
   const itemsEl=document.getElementById('checkoutItems');
   const totalEl=document.getElementById('checkoutTotal');
   const payBtn=document.getElementById('checkoutPayBtn');
-  const fields=['chkName','chkEmail','chkPhone','chkRut','chkCity','chkAddress'];
   const f=n=>'$'+n.toLocaleString('es-CL');
 
-  function getVal(id){return document.getElementById(id)?.value.trim()||''}
+  function getEmail(){
+    const u=document.getElementById('chkEmailUser')?.value.trim()||'';
+    const d=document.getElementById('chkEmailDomain')?.value||'@gmail.com';
+    return u+d;
+  }
+  function getPhone(){
+    const n=document.getElementById('chkPhone')?.value.trim()||'';
+    return '+56 '+n;
+  }
+  function getRaw(id){return document.getElementById(id)?.value.trim()||''}
 
   function isValid(){
-    return getVal('chkName')&&getVal('chkEmail')&&getVal('chkPhone')&&getVal('chkCity');
+    return getRaw('chkName')&&getEmail()&&getPhone()&&getRaw('chkCity');
   }
 
   function updatePayBtn(){
@@ -361,20 +369,32 @@ const Checkout=(()=>{
     }).join('');
     itemsEl.querySelectorAll('.checkout-qty-btn').forEach(btn=>btn.addEventListener('click',()=>{
       const id=btn.dataset.id,delta=Number(btn.dataset.delta);
-      Cart.changeQty(id,delta);
+      Cart.changeQty(id,delta,true);
       renderItems();
       totalEl.textContent=f(calcTotals());
       updatePayBtn();
       if(!state.cart.length)close();
     }));
     itemsEl.querySelectorAll('.checkout-item-remove').forEach(btn=>btn.addEventListener('click',()=>{
-      Cart.removeItem(btn.dataset.id);
+      Cart.removeItem(btn.dataset.id,true);
       renderItems();
       totalEl.textContent=f(calcTotals());
       updatePayBtn();
       if(!state.cart.length)close();
     }));
     totalEl.textContent=f(calcTotals());
+  }
+
+  function formatRut(v){
+    let d=v.replace(/[^0-9kK]/g,'').toUpperCase();
+    if(d.length<=1)return d;
+    const body=d.slice(0,-1),checker=d.slice(-1);
+    let formatted='';
+    for(let i=0;i<body.length;i++){
+      if(i>0&&(body.length-i)%3===0)formatted+='.';
+      formatted+=body[i];
+    }
+    return formatted+'-'+checker;
   }
 
   function open(){
@@ -384,12 +404,16 @@ const Checkout=(()=>{
     overlay.classList.add('active');
     document.body.style.overflow='hidden';
     document.documentElement.style.overflow='hidden';
-    fields.forEach(id=>{
+    ['chkName','chkRut','chkCity','chkAddress'].forEach(id=>{
       const el=document.getElementById(id);
       if(el){el.value='';el.classList.remove('error');}
     });
-    const phone=document.getElementById('chkPhone');
-    if(phone)phone.value='+56 ';
+    const eu=document.getElementById('chkEmailUser');
+    if(eu){eu.value='';}
+    const ed=document.getElementById('chkEmailDomain');
+    if(ed)ed.value='@gmail.com';
+    const ph=document.getElementById('chkPhone');
+    if(ph)ph.value='';
     updatePayBtn();
   }
 
@@ -408,8 +432,8 @@ const Checkout=(()=>{
     payBtn.textContent='Procesando...';
     try{
       const customer={
-        name:getVal('chkName'),email:getVal('chkEmail'),phone:getVal('chkPhone'),
-        rut:getVal('chkRut'),city:getVal('chkCity'),address:getVal('chkAddress'),
+        name:getRaw('chkName'),email:getEmail(),phone:getPhone(),
+        rut:getRaw('chkRut'),city:getRaw('chkCity'),address:getRaw('chkAddress'),
       };
       const items=state.cart.map(({product,qty})=>({name:product.name,qty,price:getUnitPrice(product.key,qty)}));
       const res=await fetch('/api/create-preference',{
@@ -430,9 +454,16 @@ const Checkout=(()=>{
     document.getElementById('checkoutClose')?.addEventListener('click',close);
     overlay?.addEventListener('click',close);
     document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
-    fields.forEach(id=>{
+    ['chkName','chkEmailUser','chkEmailDomain','chkPhone','chkCity','chkAddress'].forEach(id=>{
       const el=document.getElementById(id);
       if(el)el.addEventListener('input',updatePayBtn);
+    });
+    document.getElementById('chkEmailDomain')?.addEventListener('change',updatePayBtn);
+    document.getElementById('chkRut')?.addEventListener('input',function(){
+      const s=this.selectionStart||0,c=this.value.length;
+      this.value=formatRut(this.value);
+      const d=this.value.length-c;
+      this.setSelectionRange(s+d,s+d);
     });
     payBtn?.addEventListener('click',pay);
     document.getElementById('checkoutWaBtn')?.addEventListener('click',e=>{e.preventDefault();close();openWhatsApp();});
