@@ -11,6 +11,7 @@
 </head>
 <body>
 
+<!-- FONDO ANIMADO -->
 <div class="background" aria-hidden="true">
   <svg viewBox="0 0 1440 900" preserveAspectRatio="none">
     <path d="M120,0 C90,220 160,450 120,900"  class="line l1"/>
@@ -27,6 +28,7 @@
   </svg>
 </div>
 
+<!-- NAVBAR -->
 <header class="nav" role="banner">
   <div class="nav-logo">
     <svg width="22" height="22" viewBox="0 0 814 1000" fill="currentColor">
@@ -49,6 +51,7 @@
   </div>
 </header>
 
+<!-- HERO PRINCIPAL -->
 <main class="hero" id="hero">
   <div class="hero-lines" aria-hidden="true">
     <svg viewBox="0 0 1440 900" preserveAspectRatio="none">
@@ -106,6 +109,7 @@
   <div class="dots" id="dots" role="tablist" aria-label="Selector de producto"></div>
 </main>
 
+<!-- ══ CINTAS CRUZADAS ══ -->
 <div class="xtape-wrap">
   <div class="xtape xtape-a">
     <div class="xtape-track">
@@ -165,6 +169,7 @@
   </div>
 </div>
 
+<!-- ══ DESTACADOS ══ -->
 <section class="csl-section">
   <div class="csl-title-wrap">
     <h2 class="csl-title">PRODUCTOS<br>DESTACADOS</h2>
@@ -233,6 +238,7 @@
   </div>
 </section>
 
+<!-- ══ SECCIÓN PRODUCTOS ══ -->
 <section id="productos">
   <div class="productos-header">
     <p class="productos-subtitulo">Catálogo Mayor 2026</p>
@@ -299,6 +305,7 @@
   </div>
 </section>
 
+<!-- ══ ¿POR QUÉ ELEGIRNOS? ══ -->
 <section id="por-que" class="porque-section">
   <div class="porque-inner">
     <div class="porque-header">
@@ -308,6 +315,7 @@
 
     <div class="porque-grid">
 
+      <!-- CARD 1 -->
       <div class="porque-card">
         <div class="porque-card-inner">
           <div class="porque-card-front">
@@ -324,6 +332,7 @@
       </div>
       
 
+      <!-- CARD 2 -->
       <div class="porque-card">
         <div class="porque-card-inner">
           <div class="porque-card-front">
@@ -338,6 +347,7 @@
         </div>
       </div>
 
+      <!-- CARD 3 -->
       <div class="porque-card">
         <div class="porque-card-inner">
           <div class="porque-card-front">
@@ -352,6 +362,7 @@
         </div>
       </div>
 
+      <!-- CARD 4 -->
       <div class="porque-card">
         <div class="porque-card-inner">
           <div class="porque-card-front">
@@ -370,6 +381,7 @@
   </div>
 </section>
 
+<!-- ══ CONTACTO ══ -->
 <section id="contacto" class="contacto-section">
   <div class="contacto-inner">
     <div class="contacto-header">
@@ -417,6 +429,7 @@
   </div>
 </section>
 
+<!-- ══ FOOTER ══ -->
 <footer class="footer">
   <div class="footer-inner">
     <div class="footer-logo">
@@ -531,6 +544,7 @@
   </div>
 </div>
 
+<!-- CARRITO -->
 <aside class="cart-drawer" id="cartDrawer" aria-label="Carrito de compras">
   <div class="cart-header">
     <h2>Carrito</h2>
@@ -549,6 +563,51 @@
   </div>
 </aside>
 <div class="cart-overlay" id="cartOverlay"></div>
+
+<!-- CHECKOUT MODAL -->
+<div class="checkout-overlay" id="checkoutOverlay"></div>
+<div class="checkout-modal" id="checkoutModal" style="display:none">
+  <div class="checkout-inner">
+    <div class="checkout-form">
+      <div class="checkout-header">
+        <h2>Completá tus datos</h2>
+        <button class="checkout-close" id="checkoutClose" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+      <div class="checkout-fields">
+        <label class="checkout-label">Nombre completo *</label>
+        <input class="checkout-input" id="chkName" type="text" placeholder="Ej: Juan Pérez" required>
+        <label class="checkout-label">Email *</label>
+        <input class="checkout-input" id="chkEmail" type="email" placeholder="Ej: juan@correo.com" required>
+        <label class="checkout-label">Teléfono *</label>
+        <input class="checkout-input" id="chkPhone" type="tel" placeholder="Ej: +56 9 1234 5678" required>
+        <label class="checkout-label">RUT</label>
+        <input class="checkout-input" id="chkRut" type="text" placeholder="Ej: 12.345.678-9">
+        <label class="checkout-label">Ciudad / Región *</label>
+        <input class="checkout-input" id="chkCity" type="text" placeholder="Ej: Santiago" required>
+        <label class="checkout-label">Dirección</label>
+        <input class="checkout-input" id="chkAddress" type="text" placeholder="Ej: Av. Siempre Viva 123">
+      </div>
+    </div>
+    <div class="checkout-summary">
+      <h3>Tu pedido</h3>
+      <div class="checkout-items" id="checkoutItems"></div>
+      <div class="checkout-total-row">
+        <span>Total</span>
+        <span class="checkout-total-amount" id="checkoutTotal">$0</span>
+      </div>
+      <button class="checkout-pay-btn" id="checkoutPayBtn" disabled>
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;vertical-align:middle;margin-right:8px"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+        Pagar con Mercado Pago
+      </button>
+      <p class="checkout-disclaimer">Tus datos son solo para procesar el pedido. No los compartimos con terceros.</p>
+      <p class="checkout-wa-fallback">
+        Tambi&eacute;n pod&eacute;s <a href="#" id="checkoutWaBtn">pedir por WhatsApp</a>
+      </p>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
