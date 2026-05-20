@@ -374,12 +374,21 @@ const Checkout=(()=>{
         <button class="checkout-item-remove" data-id="${product.id}" aria-label="Eliminar">×</button>
       </div>`;
     }).join('');
-    itemsEl.querySelectorAll('.checkout-qty-btn,.checkout-item-remove').forEach(btn=>btn.addEventListener('click',()=>{
-      const s=String(btn.dataset.id),delta=Number(btn.dataset.delta)||0;
+    itemsEl.querySelectorAll('.checkout-qty-btn').forEach(btn=>btn.addEventListener('click',()=>{
+      const s=String(btn.dataset.id),delta=Number(btn.dataset.delta);
       const item=state.cart.find(i=>String(i.product.id)===s);
       if(!item)return;
       item.qty=Math.max(0,item.qty+delta);
       if(item.qty===0)state.cart=state.cart.filter(i=>String(i.product.id)!==s);
+      updateBadge();
+      renderItems();
+      totalEl.textContent=f(calcTotals());
+      updatePayBtn();
+      if(!state.cart.length)close();
+    }));
+    itemsEl.querySelectorAll('.checkout-item-remove').forEach(btn=>btn.addEventListener('click',()=>{
+      const s=String(btn.dataset.id);
+      state.cart=state.cart.filter(i=>String(i.product.id)!==s);
       updateBadge();
       renderItems();
       totalEl.textContent=f(calcTotals());
@@ -435,7 +444,6 @@ const Checkout=(()=>{
     }});
     document.body.style.overflow='';
     document.documentElement.style.overflow='';
-    if(typeof ProductModal!=='undefined')ProductModal.closeInstant();
   }
 
   async function pay(){
