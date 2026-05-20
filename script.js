@@ -430,17 +430,22 @@ const Checkout=(()=>{
     }
     isOpen=true;
 
-    // TEST — cssText para resetear TODO
-    modal.style.cssText = '';
-    panel.style.cssText = '';
+    // TEST — verificar si modal está en el DOM
+    console.log('🧪 modal parent:', modal.parentElement?.tagName, modal.parentElement?.id);
+    console.log('🧪 modal connected:', modal.isConnected);
+    console.log('🧪 panel parent:', panel.parentElement?.className);
+    console.log('🧪 panel connected:', panel.isConnected);
+
+    // TEST — removeAttribute + setAttribute
+    modal.removeAttribute('style');
+    panel.removeAttribute('style');
     void document.body.offsetHeight;
-    modal.style.cssText = 'display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:10001; background:rgba(0,0,0,.35); justify-content:flex-end; overflow:hidden;';
-    panel.style.cssText = 'width:860px; height:100vh; background:#fff; display:flex; flex-direction:column;';
+    modal.setAttribute('style', 'display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:10001; background:rgba(0,0,0,.35); justify-content:flex-end; overflow:hidden;');
+    panel.setAttribute('style', 'width:860px; height:100vh; background:#fff; display:flex; flex-direction:column;');
     void modal.offsetHeight;
 
     console.log('🧪 modal rect:', modal.getBoundingClientRect());
     console.log('🧪 panel rect:', panel.getBoundingClientRect());
-    console.log('🧪 cart rect:', DOM.cartDrawer.getBoundingClientRect());
 
     document.body.style.overflow='hidden';
     document.documentElement.style.overflow='hidden';
