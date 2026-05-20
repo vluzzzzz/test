@@ -294,7 +294,9 @@ const Cart=(()=>{
     const fi=DOM.cartItems.querySelector('.cart-item');if(fi)gsap.fromTo(fi,{opacity:0,x:24},{opacity:1,x:0,duration:0.4,ease:'power3.out'});
   }
   function openMercadoPago(){
+    console.log('🔵 openMercadoPago called, cart.length:', state.cart.length);
     if(!state.cart.length)return;
+    console.log('🔵 calling Checkout.open()');
     Checkout.open();
   }
   function openWhatsApp(){
@@ -309,7 +311,9 @@ const Cart=(()=>{
     document.body.appendChild(DOM.cartDrawer);document.body.appendChild(DOM.cartOverlay);
     DOM.cartTrigger.addEventListener('click',open);DOM.closeCart.addEventListener('click',close);DOM.cartOverlay.addEventListener('click',close);
     document.getElementById('checkoutBtn')?.addEventListener('click',openWhatsApp);
-    document.getElementById('mpBtn')?.addEventListener('click',openMercadoPago);
+    const mpBtn = document.getElementById('mpBtn');
+    console.log('🔵 mpBtn element found:', !!mpBtn);
+    mpBtn?.addEventListener('click',openMercadoPago);
   }
   return{init,addItem,open,close};
 })();
@@ -423,14 +427,22 @@ const Checkout=(()=>{
   }
 
   function open(){
+    console.log('🟢 Checkout.open() called, isOpen:', isOpen);
     if(isOpen)return;
     isOpen=true;
     renderItems();
     gsap.killTweensOf(modal);gsap.killTweensOf(panel);
+    console.log('🟢 setting display:flex on modal, current display:', modal.style.display);
     gsap.set(modal,{display:'flex',opacity:0});
     gsap.set(panel,{x:'100%'});
-    gsap.to(modal,{opacity:1,duration:0.25,ease:'power2.out'});
-    gsap.to(panel,{x:'0%',duration:0.4,ease:'power3.out',delay:0.05});
+    console.log('🟢 after gsap.set, modal display:', modal.style.display, 'opacity:', modal.style.opacity);
+    console.log('🟢 panel transform:', panel.style.transform, 'width:', panel.style.width);
+    gsap.to(modal,{opacity:1,duration:0.25,ease:'power2.out',onComplete:()=>{
+      console.log('🟢 modal fadeIn complete, opacity:', modal.style.opacity);
+    }});
+    gsap.to(panel,{x:'0%',duration:0.4,ease:'power3.out',delay:0.05,onComplete:()=>{
+      console.log('🟢 panel slideIn complete, transform:', panel.style.transform);
+    }});
     document.body.style.overflow='hidden';
     document.documentElement.style.overflow='hidden';
     clearForm();
@@ -459,6 +471,7 @@ const Checkout=(()=>{
   }
 
   function close(){
+    console.log('🔴 Checkout.close() called, isOpen:', isOpen);
     if(!isOpen)return;
     isOpen=false;
     gsap.killTweensOf(modal);gsap.killTweensOf(panel);
