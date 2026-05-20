@@ -434,19 +434,27 @@ const Checkout=(()=>{
     console.log('💳 Checkout.open()');
     renderItems();
 
-    // TEST: mostrar modal directo (sin GSAP)
+    // TEST: mostrar modal y detectar si algo lo tapa
     modal.style.display = 'flex';
+    modal.style.outline = '5px solid red';
+    modal.style.outlineOffset = '-5px';
     modal.style.opacity = '1';
     panel.style.transform = 'translateX(0%)';
-    const csModal = getComputedStyle(modal);
-    const csPanel = getComputedStyle(panel);
-    const csCart = getComputedStyle(DOM.cartDrawer);
-    console.log('🔍 TEST directo — modal.display:', csModal.display, '| opacity:', csModal.opacity, '| z-index:', csModal.zIndex);
-    console.log('🔍 TEST directo — panel.transform:', csPanel.transform, '| width:', csPanel.width, '| height:', csPanel.height);
-    console.log('🔍 TEST directo — cart.z-index:', csCart.zIndex, '| cart.display:', csCart.display);
-    console.log('🔍 TEST directo — modal rect:', modal.getBoundingClientRect());
-    console.log('🔍 TEST directo — panel rect:', panel.getBoundingClientRect());
-    console.log('🔍 TEST directo — cart rect:', DOM.cartDrawer.getBoundingClientRect());
+    panel.style.outline = '3px solid blue';
+    // Forzar reflow
+    void modal.offsetHeight;
+    console.log('🔍 TEST — modal z-index:', getComputedStyle(modal).zIndex);
+    console.log('🔍 TEST — panel rect:', panel.getBoundingClientRect());
+    console.log('🔍 TEST — cart z-index:', getComputedStyle(DOM.cartDrawer).zIndex);
+    console.log('🔍 TEST — cart rect:', DOM.cartDrawer.getBoundingClientRect());
+    // Ver si algún elemento está encima: buscar el z-index más alto
+    const all = document.querySelectorAll('*');
+    let maxZ = 0, maxEl = null;
+    all.forEach(el => {
+      const z = parseInt(getComputedStyle(el).zIndex);
+      if(z > maxZ){ maxZ = z; maxEl = el; }
+    });
+    console.log('🔍 TEST — elemento con mayor z-index:', maxZ, maxEl?.tagName, maxEl?.className);
 
     document.body.style.overflow='hidden';
     document.documentElement.style.overflow='hidden';
