@@ -25,6 +25,13 @@ module.exports = async (req, res) => {
 
     const preference = new Preference(client);
 
+    // Origen del sitio: usa FRONTEND_URL si está bien; si no, lo deriva del host
+    // del request (así notification_url / back_urls funcionan aunque falte la env).
+    const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0];
+    const origin = (process.env.FRONTEND_URL && /^https?:\/\//.test(process.env.FRONTEND_URL))
+      ? process.env.FRONTEND_URL.replace(/\/$/, '')
+      : `${proto}://${req.headers.host}`;
+
     const body = {
       items: items.map(i => ({
         title: i.name,
@@ -38,11 +45,11 @@ module.exports = async (req, res) => {
         phone: { number: customer.phone },
       },
       back_urls: {
-        success: `${process.env.FRONTEND_URL}/success`,
-        failure: `${process.env.FRONTEND_URL}/cancel`,
-        pending: `${process.env.FRONTEND_URL}/cancel`,
+        success: `${origin}/success`,
+        failure: `${origin}/cancel`,
+        pending: `${origin}/cancel`,
       },
-      notification_url: `${process.env.FRONTEND_URL}/api/webhook`,
+      notification_url: `${origin}/api/webhook`,
       external_reference: JSON.stringify({
         customer,
         items: items.map(i => ({ name: i.name, qty: i.qty, price: i.price })),
@@ -52,8 +59,15 @@ module.exports = async (req, res) => {
       purpose: 'wallet_purchase',
     };
 
+    console.log('create-preference', {
+      notification_url: body.notification_url,
+      back_success: body.back_urls.success,
+      extRefLen: body.external_reference.length,
+      frontendUrlEnv: process.env.FRONTEND_URL || null,
+    });
+
     const result = await preference.create({ body });
-    res.json({ init_point: result.init_point, id: result.id });
+    res.json({ init_point: result.init_point, id: result.id, _debug_notification_url: body.notification_url });
   } catch (err) {
     console.error('create-preference error:', err);
     res.status(500).json({ error: 'Error al crear preferencia' });
