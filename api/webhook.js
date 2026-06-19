@@ -82,20 +82,22 @@ module.exports = async (req, res) => {
     const type = body.type || query.type || query.topic;
     const dataId = body.data?.id || query['data.id'] || query.id;
 
+    console.log('webhook recibido', {
+      type, dataId,
+      hasSignature: !!(req.headers && req.headers['x-signature']),
+      env: { mp: !!process.env.MERCADO_PAGO_ACCESS_TOKEN, resend: !!process.env.RESEND_API_KEY, to: process.env.NOTIFICATION_EMAIL },
+    });
+
     // Solo procesamos notificaciones de pago con id.
     if (!dataId || !(type === 'payment' || type === undefined)) {
+      console.log('webhook: no es notificación de pago con id — ignorado', { type, dataId });
       return res.status(200).end();
     }
 
-    // Seguridad: validar la firma de Mercado Pago si hay secret configurado.
-    // (Evita que cualquiera dispare correos golpeando este endpoint.)
-    const sig = validSignature(req, dataId);
-    if (sig === false) {
-      console.warn('webhook: firma inválida — rechazado');
-      return res.status(401).end();
-    }
-    if (sig === null) {
-      console.warn('webhook: MERCADO_PAGO_WEBHOOK_SECRET no configurado — sin validar firma');
+    // Firma de MP: la registramos pero NO bloqueamos por ella (las IPN no la
+    // traen). La seguridad real la da consultar el pago por su id contra MP.
+    if (validSignature(req, dataId) === false) {
+      console.warn('webhook: firma ausente o no válida (se procesa igual)');
     }
 
     // Flujo real de Mercado Pago: consultar el pago por su id para obtener
@@ -108,6 +110,7 @@ module.exports = async (req, res) => {
 
     const paymentStatus = info?.status || 'unknown';
     const paymentId = String(info?.id || dataId);
+    console.log('webhook: pago', paymentId, 'status', paymentStatus, 'externalRef?', !!info?.external_reference, 'len', (info?.external_reference || '').length);
 
     if (paymentStatus !== 'approved') {
       console.log('webhook: pago', paymentId, 'estado', paymentStatus, '— no se envía correo');
@@ -116,16 +119,17 @@ module.exports = async (req, res) => {
 
     let paymentData = null;
     if (info?.external_reference) {
-      try { paymentData = JSON.parse(info.external_reference); } catch { paymentData = null; }
+      try { paymentData = JSON.parse(info.external_reference); }
+      catch (e) { console.warn('webhook: external_reference no es JSON válido (¿truncado?):', info.external_reference); paymentData = null; }
     }
     if (!paymentData) {
-      console.log('webhook: pago aprobado sin external_reference, skipping email', { paymentId });
+      console.log('webhook: pago aprobado sin external_reference utilizable, skipping email', { paymentId });
       return res.status(200).end();
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    await resend.emails.send({
+    const sent = await resend.emails.send({
       // NOTA Resend: con onboarding@resend.dev solo se entrega al email dueño
       // de la cuenta Resend. Para enviar a otra casilla, verificar un dominio
       // y cambiar el "from" a uno de ese dominio.
@@ -141,7 +145,11 @@ module.exports = async (req, res) => {
       }),
     });
 
-    console.log('email enviado para pago', paymentId);
+    if (sent && sent.error) {
+      console.error('webhook: Resend NO envió el correo:', JSON.stringify(sent.error));
+    } else {
+      console.log('email enviado para pago', paymentId, '— resend id:', sent?.data?.id);
+    }
     res.status(200).end();
   } catch (err) {
     // Responder 200 igual para que MP no reintente indefinidamente.
