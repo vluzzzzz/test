@@ -36,17 +36,10 @@ function buildCard(p){
       <input type="text" data-f="name" value="${escH(p.name)}">
     </label>
 
-    <div class="row2">
-      <div>
-        <label class="fld" style="margin-bottom:8px"><span>Precio al por mayor · 1 a 10 unidades</span></label>
-        <div class="tiers" data-box="tiers"></div>
-        <p class="note-stock">Poné el precio por unidad según la cantidad y activá los tramos que quieras ofrecer.</p>
-      </div>
-      <label class="fld"><span>Categoría</span>
-        <div class="seg" data-box="cat">
-          ${CATS.map(([v,l])=>`<button type="button" data-cat="${v}">${l}</button>`).join('')}
-        </div>
-      </label>
+    <div>
+      <label class="fld" style="margin-bottom:8px"><span>Precio al por mayor · 1 a 10 unidades</span></label>
+      <div class="tiers" data-box="tiers"></div>
+      <p class="note-stock">Poné el precio por unidad según la cantidad y activá los tramos que quieras ofrecer.</p>
     </div>
 
     <label class="fld"><span>Descripción</span>
@@ -74,31 +67,18 @@ function buildCard(p){
       </div>
     </div>
 
-    <div class="adv-toggle" data-act="adv"><span class="chev">▸</span> Características, imágenes y colores</div>
+    <div class="adv-toggle" data-act="adv"><span class="chev">▸</span> Características e imágenes</div>
     <div class="adv hidden" data-box="adv">
       <h4>Características</h4>
       <div data-box="features"></div>
       <button class="btn btn-ghost" data-act="add-feature" style="padding:8px 14px;font-size:13px;margin-bottom:18px">+ Agregar característica</button>
 
-      <h4>Galería de imágenes</h4>
+      <h4>Imágenes secundarias (galería del detalle)</h4>
+      <p class="note-stock" style="margin:-6px 0 10px">Son las fotos extra que se ven al abrir el producto. La de arriba es la principal.</p>
       <div class="gallery" data-box="gallery"></div>
-      <button class="btn btn-dark file-btn" style="padding:9px 16px;font-size:13px;margin-bottom:18px">Subir y agregar
+      <button class="btn btn-dark file-btn" style="padding:9px 16px;font-size:13px;margin-bottom:4px">Subir y agregar
         <input type="file" accept="image/*" multiple data-act="upload-gallery">
       </button>
-
-      <h4>Variantes de color <span style="text-transform:none;font-weight:400">(opcional)</span></h4>
-      <div data-box="colors"></div>
-      <button class="btn btn-ghost" data-act="add-color" style="padding:8px 14px;font-size:13px;margin-bottom:18px">+ Agregar color</button>
-
-      <h4>Mostrar en la portada</h4>
-      <label class="list-row" style="align-items:center;gap:10px;margin-bottom:6px">
-        <label class="switch"><input type="checkbox" data-f="featured" ${p.is_featured?'checked':''}><span class="track"></span><span class="thumb"></span></label>
-        <span>En carrusel “Destacados”</span>
-      </label>
-      <label class="list-row" style="align-items:center;gap:10px">
-        <label class="switch"><input type="checkbox" data-f="hero" ${p.is_hero?'checked':''}><span class="track"></span><span class="thumb"></span></label>
-        <span>En el hero principal</span>
-      </label>
     </div>
 
     <div class="actions">
@@ -117,15 +97,6 @@ function bindCard(card){
   const id = card.dataset.id;
   const st = work.get(id);
 
-  // categoría
-  const catBox = card.querySelector('[data-box=cat]');
-  const paintCat = () => catBox.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.cat === st.p.category));
-  catBox.addEventListener('click', e => {
-    const b = e.target.closest('button[data-cat]'); if (!b) return;
-    st.p.category = b.dataset.cat; paintCat();
-  });
-  paintCat();
-
   // inputs escalares
   card.querySelector('[data-f=name]').addEventListener('input', e => { st.p.name = e.target.value; card.querySelector('[data-h=name]').textContent = e.target.value; });
   card.querySelector('[data-f=desc]').addEventListener('input', e => st.p.description = e.target.value);
@@ -133,8 +104,6 @@ function bindCard(card){
   imgInput.addEventListener('input', e => { st.p.image = e.target.value; const t = card.querySelector('[data-h=thumb]'); t.src = e.target.value; t.style.visibility = 'visible'; });
   card.querySelector('[data-f=scale]').addEventListener('input', e => st.p.image_scale = parseFloat(e.target.value) || 0.85);
   card.querySelector('[data-f=stock]').addEventListener('change', e => st.p.in_stock = e.target.checked);
-  card.querySelector('[data-f=featured]').addEventListener('change', e => st.p.is_featured = e.target.checked);
-  card.querySelector('[data-f=hero]').addEventListener('change', e => st.p.is_hero = e.target.checked);
 
   // acciones
   card.addEventListener('click', async e => {
@@ -142,7 +111,6 @@ function bindCard(card){
     if (!act) return;
     if (act === 'adv') { card.querySelector('[data-box=adv]').classList.toggle('hidden'); e.target.closest('.adv-toggle').classList.toggle('open'); }
     if (act === 'add-feature') { st.p.features.push(''); renderFeatures(card, st); }
-    if (act === 'add-color') { st.p.colors.push({ name:'', hex:'#000000' }); renderColors(card, st); }
     if (act === 'save') await saveProduct(card, st, e.target);
     if (act === 'undo') await undoProduct(card, id);
     if (act === 'delete') await deleteProduct(id, e.target);
@@ -155,7 +123,6 @@ function bindCard(card){
   renderTiers(card, st);
   renderFeatures(card, st);
   renderGallery(card, st);
-  renderColors(card, st);
 }
 
 /* ── Sub-renders (listas dinámicas) ─────────────────────── */
@@ -193,22 +160,6 @@ function renderGallery(card, st){
   box.innerHTML = st.p.gallery.map((src,i)=>`
     <div class="g"><img src="${escH(src)}" alt=""><button data-i="${i}" title="Quitar">×</button></div>`).join('') || '<span style="color:var(--muted);font-size:13px">Sin imágenes</span>';
   box.querySelectorAll('button[data-i]').forEach(b=>b.addEventListener('click', () => { st.p.gallery.splice(+b.dataset.i,1); renderGallery(card, st); }));
-}
-
-function renderColors(card, st){
-  const box = card.querySelector('[data-box=colors]');
-  box.innerHTML = st.p.colors.map((c,i)=>`
-    <div class="color-row" data-i="${i}">
-      <input type="text" data-c="name" value="${escH(c.name)}" placeholder="Nombre del color">
-      <input type="color" data-c="hex" value="${escH(c.hex||'#000000')}">
-      <button class="mini" data-c="del" title="Quitar">×</button>
-    </div>`).join('');
-  box.querySelectorAll('.color-row').forEach(row=>{
-    const i = +row.dataset.i;
-    row.querySelector('[data-c=name]').addEventListener('input', e => st.p.colors[i].name = e.target.value);
-    row.querySelector('[data-c=hex]').addEventListener('input', e => st.p.colors[i].hex = e.target.value);
-    row.querySelector('[data-c=del]').addEventListener('click', () => { st.p.colors.splice(i,1); renderColors(card, st); });
-  });
 }
 
 /* ── Subida de imágenes a Storage ───────────────────────── */
@@ -254,7 +205,6 @@ async function saveProduct(card, st, btn){
       name:p.name.trim(), category:p.category, description:p.description,
       image:p.image.trim(), image_scale:p.image_scale, in_stock:p.in_stock,
       features:p.features.filter(f=>f.trim()!==''), gallery:p.gallery,
-      colors:p.colors.filter(c=>(c.name||'').trim()!==''),
       is_hero:p.is_hero, is_featured:p.is_featured,
     }).eq('id', p.id);
     if (e1) throw e1;

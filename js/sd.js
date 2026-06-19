@@ -97,6 +97,8 @@ async function loadCatalog(){
         .map(t=>({ qty:t.qty, price:t.price }));
       if (tiers.length) PRICE_TIERS[p.slug] = tiers;
       FEATURES[p.slug] = p.features || [];
+      // imágenes del detalle = principal + secundarias (galería)
+      GALLERY[p.slug] = [p.image, ...(p.gallery || [])].filter(Boolean);
     });
 
     // HERO (carrusel principal)
@@ -150,6 +152,8 @@ const FEATURES={
   'cargador-tipo-c':['Cable USB-C incluido','Compatible iPhone 15+','iPad Pro y MacBook','Carga rápida 20W'],
   'cargador-samsung-45w':['Carga ultra rápida 45W','Compatible línea Galaxy','Cable USB-C incluido','Carga completa en ~1 hora'],
 };            // fallback — loadCatalog() lo sobreescribe desde Supabase
+// { slug: [imgPrincipal, ...secundarias] } — desde Supabase (vacío = usa fallback hardcodeado)
+const GALLERY={};
 const PRODUCT_CONFIG={
   1:{fontSize:'22vw',productScale:1.1,productY:-15,blobYRatio:0.88,blobSpeed:0.030},
   2:{fontSize:'28vw',productScale:1.1,productY:-10,blobYRatio:0.88,blobSpeed:0.030},

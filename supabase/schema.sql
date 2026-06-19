@@ -211,6 +211,23 @@ join (values
 ) as t(slug, qty, price) on t.slug = p.slug
 on conflict (product_id, qty) do nothing;
 
+-- Imágenes secundarias (galería del detalle) — solo si están vacías.
+update public.products p set gallery = g.imgs
+from (values
+  ('apple-watch-ultra-3',       array['images/apple-watch-ultra-3-v2.webp','images/apple-watch-ultra-3-v3.webp']),
+  ('apple-watch-serie-10',      array['images/apple-watch-serie-10-v2.webp','images/apple-watch-serie-10-v3.webp']),
+  ('apple-watch-black-ultra-2', array['images/apple-watch-black-ultra-2-v2.webp','images/apple-watch-black-ultra-2-v3.webp']),
+  ('airpods-4',                 array['images/airpods-4ta-generacion-v2.webp','images/airpods-4ta-generacion-v3.webp']),
+  ('airpods-pro-2',             array['images/airpods-pro-2-v2.webp','images/airpods-pro-2-v3.webp']),
+  ('airpods-3',                 array['images/airpods-3ra-generacion-v2.webp','images/airpods-3ra-generacion-v3.webp']),
+  ('airpods-max',               array['images/max-magneticos-v2.webp','images/max-magneticos-v3.webp']),
+  ('bateria-magsafe',           array['images/bateria-magsafe-v2.webp']),
+  ('cargador-lightning',        array['images/cargador-lightning-completo-v2.webp']),
+  ('cargador-tipo-c',           array['images/cargador-tipo-c-completo-v2.webp']),
+  ('cargador-samsung-45w',      array['images/cargador-samsung-45w-v2.webp'])
+) as g(slug, imgs)
+where p.slug = g.slug and (p.gallery is null or p.gallery = '{}');
+
 -- ============================================================================
 --  Después de ejecutar esto:
 --   1. Authentication → Users → Add user  (crear el usuario admin email/clave)
