@@ -60,9 +60,10 @@ function cardHTML(p){
 
 function slideHTML(p,i){
   const p1 = tierOne(p.slug);
-  const name = p.featured_name || p.name;
-  const img  = p.featured_image || p.image;
-  const tag  = p.featured_tag || 'Destacado';
+  // Mismo nombre e imagen que el producto → grilla y carrusel quedan conectados.
+  const name = p.name;
+  const img  = p.image;
+  const tag  = p.featured_tag || 'Destacado';   // etiqueta opcional del carrusel
   const out = p.in_stock === false ? ' out-of-stock' : '';
   const dis = p.in_stock === false ? ' aria-disabled="true"' : '';
   const btn = p.in_stock === false ? 'SIN STOCK' : 'Ver más';
