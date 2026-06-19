@@ -27,7 +27,7 @@ const Cart=(()=>{
     if(!state.cart.length){DOM.cartItems.innerHTML='<p class="cart-empty">Tu carrito está vacío</p>';DOM.cartFooter.style.display='none';return;}
     DOM.cartFooter.style.display='block';
     DOM.cartTotal.textContent=fmt(state.cart.reduce((s,i)=>s+getUnitPrice(i.product.key,i.qty)*i.qty,0));
-    DOM.cartItems.innerHTML=state.cart.map(({product,qty})=>{const up=getUnitPrice(product.key,qty);return`<div class="cart-item" data-id="${product.id}"><img class="cart-item-img" src="${product.image||''}" alt="${product.name}"><div class="cart-item-info"><p class="cart-item-name">${product.name}</p><p class="cart-item-price">${fmt(up)}</p></div><div class="cart-item-qty"><button class="qty-btn" data-id="${product.id}" data-delta="-1">−</button><span>${qty}</span><button class="qty-btn" data-id="${product.id}" data-delta="1">+</button></div></div>`;}).join('');
+    DOM.cartItems.innerHTML=state.cart.map(({product,qty})=>{const up=getUnitPrice(product.key,qty);return`<div class="cart-item" data-id="${product.id}"><img class="cart-item-img" src="${product.image||''}" alt="${product.name}"><div class="cart-item-info"><p class="cart-item-name">${product.name}${product.colorName?` <span class="cart-item-color">${product.colorName}</span>`:''}</p><p class="cart-item-price">${fmt(up)}</p></div><div class="cart-item-qty"><button class="qty-btn" data-id="${product.id}" data-delta="-1">−</button><span>${qty}</span><button class="qty-btn" data-id="${product.id}" data-delta="1">+</button></div></div>`;}).join('');
     DOM.cartItems.querySelectorAll('.qty-btn').forEach(btn=>btn.addEventListener('click',()=>changeQty(btn.dataset.id,Number(btn.dataset.delta))));
     const fi=DOM.cartItems.querySelector('.cart-item');if(fi)gsap.fromTo(fi,{opacity:0,x:24},{opacity:1,x:0,duration:0.4,ease:'power3.out'});
   }
@@ -38,7 +38,7 @@ const Cart=(()=>{
   function openWhatsApp(){
     if(!state.cart.length)return;
     const f=n=>'$'+n.toLocaleString('es-CL');
-    const lines=state.cart.map(({product,qty})=>{const up=getUnitPrice(product.key,qty);return`\u25b8 ${qty}x ${product.name}\n  ${f(up)} c/u = *${f(up*qty)}*`;});
+    const lines=state.cart.map(({product,qty})=>{const up=getUnitPrice(product.key,qty);return`\u25b8 ${qty}x ${product.name}${product.colorName?` (${product.colorName})`:''}\n  ${f(up)} c/u = *${f(up*qty)}*`;});
     const total=state.cart.reduce((s,i)=>s+getUnitPrice(i.product.key,i.qty)*i.qty,0);
     const msg=['*\u00a1Hola!* Me interesa hacer un pedido:','',...lines,'',`Total: *${f(total)}*`,'','\u00bfTienen stock disponible?'].join('\n');
     window.open(`https://wa.me/56942348587?text=${encodeURIComponent(msg)}`,'_blank');
@@ -99,7 +99,7 @@ const Checkout=(()=>{
       return`<div class="checkout-item" data-id="${product.id}">
         <img class="checkout-item-img" src="${product.image||''}" alt="${product.name}" loading="lazy">
         <div class="checkout-item-info">
-          <div class="checkout-item-name">${product.name}</div>
+          <div class="checkout-item-name">${product.name}${product.colorName?` · ${product.colorName}`:''}</div>
           <div class="checkout-item-unit-price">${f(up)} c/u</div>
         </div>
         <div class="checkout-item-qty-wrap">
@@ -206,7 +206,7 @@ const Checkout=(()=>{
         name:getRaw('chkName'),email:getEmail(),phone:getPhone(),
         rut:getRaw('chkRut'),city:getRaw('chkCity'),address:getRaw('chkAddress'),
       };
-      const items=state.cart.map(({product,qty})=>({name:product.name,qty,price:getUnitPrice(product.key,qty)}));
+      const items=state.cart.map(({product,qty})=>({name:product.name+(product.colorName?` (${product.colorName})`:''),qty,price:getUnitPrice(product.key,qty)}));
       const res=await fetch('/api/create-preference',{
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({items,customer}),
@@ -250,7 +250,7 @@ const Checkout=(()=>{
 
   function openWhatsApp(){
     if(!state.cart.length)return;
-    const lines=state.cart.map(({product,qty})=>{const up=getUnitPrice(product.key,qty);return`▸ ${qty}x ${product.name}\n  ${f(up)} c/u = *${f(up*qty)}*`;});
+    const lines=state.cart.map(({product,qty})=>{const up=getUnitPrice(product.key,qty);return`▸ ${qty}x ${product.name}${product.colorName?` (${product.colorName})`:''}\n  ${f(up)} c/u = *${f(up*qty)}*`;});
     const total=state.cart.reduce((s,i)=>s+getUnitPrice(i.product.key,i.qty)*i.qty,0);
     const msg=['*¡Hola!* Me interesa hacer un pedido:','',...lines,'',`Total: *${f(total)}*`,'','¿Tienen stock disponible?'].join('\n');
     window.open(`https://wa.me/56942348587?text=${encodeURIComponent(msg)}`,'_blank');
