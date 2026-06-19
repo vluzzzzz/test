@@ -1,4 +1,4 @@
-// cart-checkout.js — Cart (carrito) + Checkout (modal de pago Mercado Pago)
+// cc
 'use strict';
 const Cart=(()=>{
   let isOpen=false;

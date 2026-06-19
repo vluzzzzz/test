@@ -1,4 +1,4 @@
-// main.js — arranque: loadCatalog() + init de todos los módulos
+// mn
 'use strict';
 document.querySelectorAll('.porque-card').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('flipped')));
 document.addEventListener('DOMContentLoaded', async () => {

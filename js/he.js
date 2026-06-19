@@ -1,4 +1,4 @@
-// hero-extras.js — setHeroAddToCartState, CartButton y MaskReveal (efecto del hero)
+// he
 'use strict';
 function setHeroAddToCartState(inStock){
   if(!DOM.addToCart)return;

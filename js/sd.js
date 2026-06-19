@@ -1,4 +1,4 @@
-// store-data.js — datos (fallback), helpers, loadCatalog (Supabase), state y cache del DOM
+// sd
 'use strict';
 const HERO_STOCK = {};
 // ── FALLBACK hardcodeado ──────────────────────────────────────────────────

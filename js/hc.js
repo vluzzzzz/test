@@ -1,4 +1,4 @@
-// hero-carousel.js — ProductNav: carrusel principal (hero)
+// hc
 'use strict';
 const ProductNav=(()=>{
   let floatTween=null;

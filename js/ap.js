@@ -1,5 +1,5 @@
 'use strict';
-// admin-products.js — tarjeta de producto, editores (tramos/características/galería/colores), subida y CRUD
+// ap
 function freshWork(p){
   // Precio al por mayor: 10 tramos fijos (1..10), se rellenan desde la BD.
   const tiers = [];

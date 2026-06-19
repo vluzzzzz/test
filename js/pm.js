@@ -1,4 +1,4 @@
-// product-modal.js — ProductModal: página de detalle del producto
+// pm
 'use strict';
 const ProductModal=(()=>{
   let isOpen=false,originCard=null,originRect=null,qty=1,tiers=[],currentProduct=null,tiersOpen=false;
