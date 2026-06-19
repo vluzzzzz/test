@@ -1,0 +1,412 @@
+'use strict';
+/* ============================================================================
+ *  Panel admin — Catálogo (Supabase)
+ *  Login (Supabase Auth) + CRUD de productos + subida de imágenes a Storage.
+ * ========================================================================== */
+const sb = window.sb;
+const BUCKET = 'site-images';
+const CATS = [['audifonos','Audífonos'],['relojes','Relojes'],['accesorios','Accesorios']];
+
+const $ = (s, r = document) => r.querySelector(s);
+const fmt = n => '$' + Number(n || 0).toLocaleString('es-CL');
+const escH = s => String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function slugify(str){
+  return String(str).toLowerCase().trim()
+    .replace(/[áä]/g,'a').replace(/[éë]/g,'e').replace(/[íï]/g,'i')
+    .replace(/[óö]/g,'o').replace(/[úü]/g,'u').replace(/ñ/g,'n')
+    .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'');
+}
+function rid(){ return Math.random().toString(36).slice(2,6); }
+
+let toastT = null;
+function toast(msg, isErr){
+  const t = $('#toast');
+  t.innerHTML = (isErr ? '⚠️ ' : '✓ ') + escH(msg);
+  t.classList.toggle('err', !!isErr);
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ── Estado ─────────────────────────────────────────────── */
+let products = [];           // lista cargada
+const work = new Map();      // id -> { p, tiers } copia de trabajo
+
+/* ── Auth ───────────────────────────────────────────────── */
+async function boot(){
+  if (!sb) {                       // Supabase sin configurar → aviso y corta
+    $('#notConfigured').classList.remove('hidden');
+    $('#login').classList.add('hidden');
+    return;
+  }
+  const { data:{ session } } = await sb.auth.getSession();
+  if (session) showApp(); else showLogin();
+
+  $('#loginForm').addEventListener('submit', onLogin);
+  $('#logoutBtn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    showLogin();
+  });
+  $('#createBtn').addEventListener('click', createProduct);
+  $('#newName').addEventListener('keydown', e => { if (e.key === 'Enter') createProduct(); });
+}
+
+function showLogin(){ $('#login').classList.remove('hidden'); $('#app').classList.add('hidden'); }
+function showApp(){ $('#login').classList.add('hidden'); $('#app').classList.remove('hidden'); loadProducts(); }
+
+async function onLogin(e){
+  e.preventDefault();
+  const btn = $('#loginBtn'), err = $('#loginErr');
+  err.textContent = '';
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
+  const { error } = await sb.auth.signInWithPassword({
+    email: $('#loginEmail').value.trim(),
+    password: $('#loginPass').value,
+  });
+  btn.disabled = false; btn.textContent = 'Entrar';
+  if (error) { err.textContent = 'No se pudo entrar: ' + error.message; return; }
+  showApp();
+}
+
+/* ── Cargar productos ───────────────────────────────────── */
+async function loadProducts(){
+  const list = $('#list');
+  list.innerHTML = '<div class="empty">Cargando productos…</div>';
+  const { data, error } = await sb
+    .from('products')
+    .select('*, price_tiers(id,qty,price,active)')
+    .order('position', { ascending: true });
+  if (error) { list.innerHTML = '<div class="empty">Error: ' + escH(error.message) + '</div>'; return; }
+  products = data || [];
+  work.clear();
+  if (!products.length) { list.innerHTML = '<div class="empty">Todavía no hay productos. Creá el primero arriba.</div>'; return; }
+  list.innerHTML = '';
+  products.forEach(p => list.appendChild(buildCard(p)));
+}
+
+function freshWork(p){
+  // Precio al por mayor: 10 tramos fijos (1..10), se rellenan desde la BD.
+  const tiers = [];
+  for (let q = 1; q <= 10; q++) tiers.push({ qty:q, price:0, active:false });
+  (p.price_tiers || []).forEach(t => {
+    if (t.qty >= 1 && t.qty <= 10) {
+      tiers[t.qty-1].price = t.price || 0;
+      tiers[t.qty-1].active = t.active !== false;
+    }
+  });
+  const copy = {
+    id:p.id, slug:p.slug, name:p.name, category:p.category || 'audifonos',
+    description:p.description || '', image:p.image || '', image_scale:p.image_scale ?? 0.85,
+    in_stock:p.in_stock !== false, features:[...(p.features||[])],
+    gallery:[...(p.gallery||[])], colors:[...(p.colors||[])],
+    is_hero:!!p.is_hero, is_featured:!!p.is_featured,
+  };
+  return { p: copy, tiers };
+}
+
+/* ── Construir tarjeta de producto ──────────────────────── */
+function buildCard(p){
+  work.set(p.id, freshWork(p));
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.id = p.id;
+  card.innerHTML = `
+    <div class="prod-head">
+      <h3 data-h="name">${escH(p.name)}</h3>
+      <span class="slug-badge">${escH(p.slug)}</span>
+    </div>
+
+    <label class="fld"><span>Nombre</span>
+      <input type="text" data-f="name" value="${escH(p.name)}">
+    </label>
+
+    <div class="row2">
+      <div>
+        <label class="fld" style="margin-bottom:8px"><span>Precio al por mayor · 1 a 10 unidades</span></label>
+        <div class="tiers" data-box="tiers"></div>
+        <p class="note-stock">Poné el precio por unidad según la cantidad y activá los tramos que quieras ofrecer.</p>
+      </div>
+      <label class="fld"><span>Categoría</span>
+        <div class="seg" data-box="cat">
+          ${CATS.map(([v,l])=>`<button type="button" data-cat="${v}">${l}</button>`).join('')}
+        </div>
+      </label>
+    </div>
+
+    <label class="fld"><span>Descripción</span>
+      <textarea data-f="desc">${escH(p.description)}</textarea>
+    </label>
+
+    <label class="fld"><span>Imagen principal</span>
+      <div class="img-row">
+        <img class="img-thumb" data-h="thumb" src="${escH(p.image)}" alt="" onerror="this.style.visibility='hidden'">
+        <input type="text" data-f="image" value="${escH(p.image)}" placeholder="URL o ./images/...">
+        <button class="btn btn-dark file-btn" style="flex:none">Seleccionar archivo
+          <input type="file" accept="image/*" data-act="upload-main">
+        </button>
+      </div>
+    </label>
+
+    <div class="row2">
+      <label class="fld"><span>Escala imagen</span>
+        <input type="number" step="0.05" data-f="scale" value="${p.image_scale ?? 0.85}">
+      </label>
+      <div>
+        <label class="fld" style="margin-bottom:6px"><span>Stock disponible</span></label>
+        <label class="switch"><input type="checkbox" data-f="stock" ${p.in_stock!==false?'checked':''}><span class="track"></span><span class="thumb"></span></label>
+        <p class="note-stock">Si lo apagás, el producto igual se muestra pero en gris con cartel “SIN STOCK”.</p>
+      </div>
+    </div>
+
+    <div class="adv-toggle" data-act="adv"><span class="chev">▸</span> Características, imágenes y colores</div>
+    <div class="adv hidden" data-box="adv">
+      <h4>Características</h4>
+      <div data-box="features"></div>
+      <button class="btn btn-ghost" data-act="add-feature" style="padding:8px 14px;font-size:13px;margin-bottom:18px">+ Agregar característica</button>
+
+      <h4>Galería de imágenes</h4>
+      <div class="gallery" data-box="gallery"></div>
+      <button class="btn btn-dark file-btn" style="padding:9px 16px;font-size:13px;margin-bottom:18px">Subir y agregar
+        <input type="file" accept="image/*" multiple data-act="upload-gallery">
+      </button>
+
+      <h4>Variantes de color <span style="text-transform:none;font-weight:400">(opcional)</span></h4>
+      <div data-box="colors"></div>
+      <button class="btn btn-ghost" data-act="add-color" style="padding:8px 14px;font-size:13px;margin-bottom:18px">+ Agregar color</button>
+
+      <h4>Mostrar en la portada</h4>
+      <label class="list-row" style="align-items:center;gap:10px;margin-bottom:6px">
+        <label class="switch"><input type="checkbox" data-f="featured" ${p.is_featured?'checked':''}><span class="track"></span><span class="thumb"></span></label>
+        <span>En carrusel “Destacados”</span>
+      </label>
+      <label class="list-row" style="align-items:center;gap:10px">
+        <label class="switch"><input type="checkbox" data-f="hero" ${p.is_hero?'checked':''}><span class="track"></span><span class="thumb"></span></label>
+        <span>En el hero principal</span>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-dark" data-act="save">Guardar producto</button>
+      <button class="btn btn-ghost" data-act="undo">Deshacer cambios</button>
+      <span class="spacer"></span>
+      <button class="btn btn-danger" data-act="delete">Eliminar</button>
+    </div>`;
+
+  bindCard(card);
+  return card;
+}
+
+/* ── Bind de una tarjeta ────────────────────────────────── */
+function bindCard(card){
+  const id = card.dataset.id;
+  const st = work.get(id);
+
+  // categoría
+  const catBox = card.querySelector('[data-box=cat]');
+  const paintCat = () => catBox.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.cat === st.p.category));
+  catBox.addEventListener('click', e => {
+    const b = e.target.closest('button[data-cat]'); if (!b) return;
+    st.p.category = b.dataset.cat; paintCat();
+  });
+  paintCat();
+
+  // inputs escalares
+  card.querySelector('[data-f=name]').addEventListener('input', e => { st.p.name = e.target.value; card.querySelector('[data-h=name]').textContent = e.target.value; });
+  card.querySelector('[data-f=desc]').addEventListener('input', e => st.p.description = e.target.value);
+  const imgInput = card.querySelector('[data-f=image]');
+  imgInput.addEventListener('input', e => { st.p.image = e.target.value; const t = card.querySelector('[data-h=thumb]'); t.src = e.target.value; t.style.visibility = 'visible'; });
+  card.querySelector('[data-f=scale]').addEventListener('input', e => st.p.image_scale = parseFloat(e.target.value) || 0.85);
+  card.querySelector('[data-f=stock]').addEventListener('change', e => st.p.in_stock = e.target.checked);
+  card.querySelector('[data-f=featured]').addEventListener('change', e => st.p.is_featured = e.target.checked);
+  card.querySelector('[data-f=hero]').addEventListener('change', e => st.p.is_hero = e.target.checked);
+
+  // acciones
+  card.addEventListener('click', async e => {
+    const act = e.target.closest('[data-act]')?.dataset.act;
+    if (!act) return;
+    if (act === 'adv') { card.querySelector('[data-box=adv]').classList.toggle('hidden'); e.target.closest('.adv-toggle').classList.toggle('open'); }
+    if (act === 'add-feature') { st.p.features.push(''); renderFeatures(card, st); }
+    if (act === 'add-color') { st.p.colors.push({ name:'', hex:'#000000' }); renderColors(card, st); }
+    if (act === 'save') await saveProduct(card, st, e.target);
+    if (act === 'undo') await undoProduct(card, id);
+    if (act === 'delete') await deleteProduct(id, e.target);
+  });
+
+  // file inputs
+  card.querySelector('[data-act=upload-main]').addEventListener('change', e => uploadMain(e, card, st));
+  card.querySelector('[data-act=upload-gallery]').addEventListener('change', e => uploadGallery(e, card, st));
+
+  renderTiers(card, st);
+  renderFeatures(card, st);
+  renderGallery(card, st);
+  renderColors(card, st);
+}
+
+/* ── Sub-renders (listas dinámicas) ─────────────────────── */
+function renderTiers(card, st){
+  const box = card.querySelector('[data-box=tiers]');
+  box.innerHTML = st.tiers.map((t,i)=>`
+    <div class="tier${t.active?'':' off'}" data-i="${i}">
+      <span class="qlbl">${t.qty} ${t.qty===1?'unidad':'unidades'}</span>
+      <input type="number" min="0" data-t="price" value="${t.price||''}" placeholder="precio c/u" aria-label="precio para ${t.qty}">
+      <label class="switch" title="Activar este tramo"><input type="checkbox" data-t="active" ${t.active?'checked':''}><span class="track"></span><span class="thumb"></span></label>
+    </div>`).join('');
+  box.querySelectorAll('.tier').forEach(row=>{
+    const i = +row.dataset.i;
+    row.querySelector('[data-t=price]').addEventListener('input', e => st.tiers[i].price = parseInt(e.target.value,10)||0);
+    row.querySelector('[data-t=active]').addEventListener('change', e => { st.tiers[i].active = e.target.checked; row.classList.toggle('off', !e.target.checked); });
+  });
+}
+
+function renderFeatures(card, st){
+  const box = card.querySelector('[data-box=features]');
+  box.innerHTML = st.p.features.map((f,i)=>`
+    <div class="list-row" data-i="${i}">
+      <input type="text" data-feat value="${escH(f)}" placeholder="Ej: Cancelación de ruido">
+      <button class="mini" data-del title="Quitar">×</button>
+    </div>`).join('');
+  box.querySelectorAll('.list-row').forEach(row=>{
+    const i = +row.dataset.i;
+    row.querySelector('[data-feat]').addEventListener('input', e => st.p.features[i] = e.target.value);
+    row.querySelector('[data-del]').addEventListener('click', () => { st.p.features.splice(i,1); renderFeatures(card, st); });
+  });
+}
+
+function renderGallery(card, st){
+  const box = card.querySelector('[data-box=gallery]');
+  box.innerHTML = st.p.gallery.map((src,i)=>`
+    <div class="g"><img src="${escH(src)}" alt=""><button data-i="${i}" title="Quitar">×</button></div>`).join('') || '<span style="color:var(--muted);font-size:13px">Sin imágenes</span>';
+  box.querySelectorAll('button[data-i]').forEach(b=>b.addEventListener('click', () => { st.p.gallery.splice(+b.dataset.i,1); renderGallery(card, st); }));
+}
+
+function renderColors(card, st){
+  const box = card.querySelector('[data-box=colors]');
+  box.innerHTML = st.p.colors.map((c,i)=>`
+    <div class="color-row" data-i="${i}">
+      <input type="text" data-c="name" value="${escH(c.name)}" placeholder="Nombre del color">
+      <input type="color" data-c="hex" value="${escH(c.hex||'#000000')}">
+      <button class="mini" data-c="del" title="Quitar">×</button>
+    </div>`).join('');
+  box.querySelectorAll('.color-row').forEach(row=>{
+    const i = +row.dataset.i;
+    row.querySelector('[data-c=name]').addEventListener('input', e => st.p.colors[i].name = e.target.value);
+    row.querySelector('[data-c=hex]').addEventListener('input', e => st.p.colors[i].hex = e.target.value);
+    row.querySelector('[data-c=del]').addEventListener('click', () => { st.p.colors.splice(i,1); renderColors(card, st); });
+  });
+}
+
+/* ── Subida de imágenes a Storage ───────────────────────── */
+async function uploadFile(file){
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const path = `catalog/${Date.now()}-${rid()}.${ext}`;
+  const { error } = await sb.storage.from(BUCKET).upload(path, file, { cacheControl:'3600', upsert:false });
+  if (error) throw error;
+  return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+async function uploadMain(e, card, st){
+  const file = e.target.files[0]; if (!file) return;
+  toast('Subiendo imagen…');
+  try {
+    const url = await uploadFile(file);
+    st.p.image = url;
+    const input = card.querySelector('[data-f=image]');
+    input.value = url;
+    const t = card.querySelector('[data-h=thumb]'); t.src = url; t.style.visibility = 'visible';
+    toast('Imagen subida');
+  } catch (err) { toast('No se pudo subir: ' + err.message, true); }
+  e.target.value = '';
+}
+
+async function uploadGallery(e, card, st){
+  const files = [...e.target.files]; if (!files.length) return;
+  toast('Subiendo ' + files.length + ' imágen(es)…');
+  try {
+    for (const f of files) { const url = await uploadFile(f); st.p.gallery.push(url); }
+    renderGallery(card, st);
+    toast('Galería actualizada');
+  } catch (err) { toast('No se pudo subir: ' + err.message, true); }
+  e.target.value = '';
+}
+
+/* ── Guardar / Deshacer / Eliminar / Crear ──────────────── */
+async function saveProduct(card, st, btn){
+  btn.disabled = true; const orig = btn.textContent; btn.innerHTML = '<span class="spin"></span>';
+  try {
+    const p = st.p;
+    const { error: e1 } = await sb.from('products').update({
+      name:p.name.trim(), category:p.category, description:p.description,
+      image:p.image.trim(), image_scale:p.image_scale, in_stock:p.in_stock,
+      features:p.features.filter(f=>f.trim()!==''), gallery:p.gallery,
+      colors:p.colors.filter(c=>(c.name||'').trim()!==''),
+      is_hero:p.is_hero, is_featured:p.is_featured,
+    }).eq('id', p.id);
+    if (e1) throw e1;
+
+    // reemplazar tramos
+    const { error: e2 } = await sb.from('price_tiers').delete().eq('product_id', p.id);
+    if (e2) throw e2;
+    const rows = st.tiers.filter(t=>t.price>0).map(t=>({ product_id:p.id, qty:t.qty, price:t.price, active:!!t.active }));
+    if (rows.length) { const { error: e3 } = await sb.from('price_tiers').insert(rows); if (e3) throw e3; }
+
+    toast('Producto guardado');
+  } catch (err) {
+    toast('Error al guardar: ' + err.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+}
+
+async function undoProduct(card, id){
+  const { data, error } = await sb.from('products').select('*, price_tiers(id,qty,price)').eq('id', id).single();
+  if (error) { toast('No se pudo recargar: ' + error.message, true); return; }
+  const fresh = buildCard(data);
+  card.replaceWith(fresh);
+  toast('Cambios deshechos');
+}
+
+async function deleteProduct(id, btn){
+  if (!confirm('¿Eliminar este producto? Esta acción no se puede deshacer.')) return;
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
+  const { error } = await sb.from('products').delete().eq('id', id);
+  if (error) { toast('Error al eliminar: ' + error.message, true); btn.disabled = false; btn.textContent = 'Eliminar'; return; }
+  work.delete(id);
+  $('#list').querySelector(`.card[data-id="${id}"]`)?.remove();
+  toast('Producto eliminado');
+}
+
+async function createProduct(){
+  const input = $('#newName');
+  const name = input.value.trim();
+  if (!name) { input.focus(); return; }
+  const btn = $('#createBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
+  try {
+    const slug = (slugify(name) || 'producto') + '-' + rid();
+    const nextPos = (products.reduce((m,p)=>Math.max(m, p.position||0), 0)) + 1;
+    const { data, error } = await sb.from('products')
+      .insert({ slug, name, category:'audifonos', image_scale:0.85, in_stock:true, position:nextPos })
+      .select('*, price_tiers(id,qty,price,active)').single();
+    if (error) throw error;
+    await sb.from('price_tiers').insert({ product_id:data.id, qty:1, price:0, active:true });
+    data.price_tiers = [{ qty:1, price:0, active:true }];
+    products.push(data);
+
+    const list = $('#list');
+    if (list.querySelector('.empty')) list.innerHTML = '';
+    const card = buildCard(data);
+    list.insertBefore(card, list.firstChild);
+    input.value = '';
+    card.scrollIntoView({ behavior:'smooth', block:'center' });
+    toast('Producto creado');
+  } catch (err) {
+    toast('Error al crear: ' + err.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Crear producto';
+  }
+}
+
+/* ── Arranque ───────────────────────────────────────────── */
+boot();

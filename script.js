@@ -1,16 +1,13 @@
 'use strict';
-const HERO_NAME_MAP = {
-  'AirPods 4ta Generación': 'AirPods 4',
-  'AirPods 3ra Generación': 'AirPods 3',
-  'Max Magnéticos': 'AirPods Max',
-};
 const HERO_STOCK = {};
-const PRODUCTS=[
-  {id:1,key:'airpods-pro-2',name:'AirPods Pro 2',price:'',rawPrice:0,image:'images/airpods.webp',bgLabel:'AIRPODS PRO 2',scale:1,offsetX:0,offsetY:0},
-  {id:2,key:'airpods-4',name:'AirPods 4',price:'',rawPrice:0,image:'images/airpods4.webp',bgLabel:'AIRPODS 4',scale:0.8,offsetX:0,offsetY:0},
-  {id:3,key:'airpods-max',name:'AirPods Max',price:'',rawPrice:0,image:'images/airpodsmax.webp',bgLabel:'AIRPODS MAX',scale:1.4,offsetX:50,offsetY:-20},
+// ── FALLBACK hardcodeado ──────────────────────────────────────────────────
+// Si Supabase no está configurado o falla, la web usa estos datos y NO se
+// rompe. loadCatalog() los sobreescribe cuando Supabase responde.
+let PRODUCTS=[
+  {id:1,key:'airpods-pro-2',name:'AirPods Pro 2',price:'$14.000',rawPrice:14000,image:'images/airpods.webp',bgLabel:'AIRPODS PRO 2',scale:1,offsetX:0,offsetY:0},
+  {id:2,key:'airpods-4',name:'AirPods 4',price:'$15.000',rawPrice:15000,image:'images/airpods4.webp',bgLabel:'AIRPODS 4',scale:0.8,offsetX:0,offsetY:0},
+  {id:3,key:'airpods-max',name:'AirPods Max',price:'$26.990',rawPrice:26990,image:'images/airpodsmax.webp',bgLabel:'AIRPODS MAX',scale:1.4,offsetX:50,offsetY:-20},
 ];
-const getUnitPrice=(key,qty)=>{const t=PRICE_TIERS[key];if(!t||!t.length)return 0;let p=t[0].price;for(const r of t)if(qty>=r.qty)p=r.price;return p;};
 const PRICE_TIERS={
   'apple-watch-ultra-3':[{qty:1,price:29990},{qty:3,price:27990},{qty:5,price:25990},{qty:10,price:23990}],
   'apple-watch-serie-10':[{qty:1,price:29990},{qty:3,price:27990},{qty:5,price:25990},{qty:10,price:23990}],
@@ -24,8 +21,7 @@ const PRICE_TIERS={
   'cargador-tipo-c':[{qty:1,price:5000},{qty:3,price:4500},{qty:5,price:4000},{qty:10,price:3500}],
   'cargador-samsung-45w':[{qty:1,price:6000},{qty:3,price:5500},{qty:5,price:5000},{qty:10,price:4500}],
 };
-
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTuuegzIC4CQl_Q9BPSpESwrNTBTBdKgMhlfz0Q1S0e-bPMpC_UzCeLod_dCc0e3BBUSV4ooyaQu72M/pub?output=csv';
+const getUnitPrice=(key,qty)=>{const t=PRICE_TIERS[key];if(!t||!t.length)return 0;let p=t[0].price;for(const r of t)if(qty>=r.qty)p=r.price;return p;};
 
 function fmt(n){ return '$'+n.toLocaleString('es-CL'); }
 
@@ -42,116 +38,99 @@ function slugify(str) {
     .replace(/[^a-z0-9-]/g, '');
 }
 
-function parseCSV(text) {
-  return text
-    .trim()
-    .split('\n')
-    .map(row => {
-      const cells = row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
-        .map(c => c.replace(/^"|"$/g, '').trim());
-      return cells;
-    });
+// ── Catálogo desde Supabase + render dinámico ──────────────────────────────
+function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+
+function tierOne(slug){
+  const t = PRICE_TIERS[slug] || [];
+  return (t.find(x => x.qty === 1) || t[0] || {}).price || 0;
 }
 
-async function syncSheetToConfig() {
+function cardHTML(p){
+  const p1 = tierOne(p.slug);
+  const out = p.in_stock === false ? ' out-of-stock' : '';
+  const dis = p.in_stock === false ? ' aria-disabled="true"' : '';
+  const btn = p.in_stock === false ? 'SIN STOCK' : 'Ver más';
+  return `<div class="product-card${out}" data-id="${escAttr(p.slug)}" data-name="${escAttr(p.name)}" data-price="${p1}" data-raw="${p1}" data-img-scale="${p.image_scale ?? 0.75}" data-desc="${escAttr(p.description)}"${dis}>
+      <div class="card-img-wrap"><img src="${escAttr(p.image)}" alt="${escAttr(p.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+      <div class="card-info"><p class="card-name">${escAttr(p.name)}</p><p class="card-price">${fmt(p1)} <span class="card-unit">c/u</span></p><button class="card-btn">${btn}</button></div>
+    </div>`;
+}
+
+function slideHTML(p,i){
+  const p1 = tierOne(p.slug);
+  const name = p.featured_name || p.name;
+  const img  = p.featured_image || p.image;
+  const tag  = p.featured_tag || 'Destacado';
+  const out = p.in_stock === false ? ' out-of-stock' : '';
+  const dis = p.in_stock === false ? ' aria-disabled="true"' : '';
+  const btn = p.in_stock === false ? 'SIN STOCK' : 'Ver más';
+  const mid = 'mfx' + i;
+  return `<div class="swiper-slide csl-slide${out}" data-id="${escAttr(p.slug)}" data-name="${escAttr(name)}" data-price="${p1}" data-raw="${p1}" data-img-scale="${p.image_scale ?? 0.75}" data-desc="${escAttr(p.description)}"${dis}>
+      <div class="csl-corner"><svg width="31" height="31" viewBox="0 0 31 31" fill="none"><g opacity="0.35"><mask id="${mid}" fill="white"><path d="M30.6 1L1.6 0L0.7 29L29.7 30L30.6 1Z"/></mask><path d="M30.6 1L30.65 -0.47L32.2 -0.42L32.15 1.09L30.6 1ZM30.55 2.55L1.6 1.59L1.7 -1.43L30.65 -0.47L30.55 2.55ZM28.17 29.98L29.13 0.99L32.15 1.09L31.19 30.08L28.17 29.98Z" fill="white" mask="url(#${mid})"/></g></svg></div>
+      <span class="csl-tag">${escAttr(tag)}</span>
+      <div class="csl-img"><img src="${escAttr(img)}" alt="${escAttr(name)}" loading="lazy"></div>
+      <h3 class="csl-name">${escAttr(name)}</h3>
+      <span class="csl-price">${fmt(p1)}</span>
+      <button class="csl-rect">${btn}</button>
+    </div>`;
+}
+
+async function loadCatalog(){
+  if (!window.sb) return false;   // Supabase no configurado → se queda el fallback
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    const res = await fetch(SHEET_URL, { cache: 'no-store', signal: controller.signal });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const txt = await res.text();
-    const allRows = parseCSV(txt);
+    const { data, error } = await window.sb
+      .from('products')
+      .select('*, price_tiers(qty,price,active)')
+      .order('position', { ascending: true });
+    if (error) throw error;
+    const products = data || [];
+    if (!products.length) return false;   // sin datos → se queda el fallback
 
-    const rows = allRows.filter(r => r.some(c => c.trim() !== ''));
+    // PRICE_TIERS + FEATURES por slug (solo tramos activos con precio > 0)
+    products.forEach(p => {
+      const tiers = (p.price_tiers || [])
+        .filter(t => t.active !== false && t.price > 0)
+        .sort((a,b)=>a.qty-b.qty)
+        .map(t=>({ qty:t.qty, price:t.price }));
+      if (tiers.length) PRICE_TIERS[p.slug] = tiers;
+      FEATURES[p.slug] = p.features || [];
+    });
 
-    const headerIdx = rows.findIndex(r => r[1] === 'ID' || r[1]?.includes('ID'));
-    const DATA_START = headerIdx >= 0 ? headerIdx + 1 : 3;
+    // HERO (carrusel principal)
+    PRODUCTS.length = 0;
+    products.filter(p => p.is_hero)
+      .sort((a,b)=>(a.hero_order||0)-(b.hero_order||0))
+      .forEach((p, idx) => {
+        const p1 = tierOne(p.slug);
+        const heroName = p.hero_name || p.name;
+        PRODUCTS.push({
+          id: idx + 1, key: p.slug, name: heroName,
+          price: fmt(p1), rawPrice: p1, image: p.hero_image || p.image,
+          bgLabel: p.hero_bg_label || (p.name || '').toUpperCase(),
+          scale: p.hero_scale ?? 1, offsetX: p.hero_offset_x ?? 0, offsetY: p.hero_offset_y ?? 0,
+        });
+        HERO_STOCK[heroName] = p.in_stock !== false;
+      });
 
-    const sheetProducts = [];
+    // Grilla de productos
+    const grid = document.getElementById('productosGrid');
+    if (grid) grid.innerHTML = products.map(cardHTML).join('');
 
-    for (let i = DATA_START; i < rows.length - 1; i += 2) {
-      const actRow = rows[i];
-      const priceRow = rows[i + 1];
-      if (!actRow || !priceRow) break;
-
-      const rawId = actRow[1] ?? '';
-      const name = actRow[2] ?? '';
-      if (!rawId && !name) break;
-
-      const stock = (actRow[3] ?? '').toLowerCase().startsWith('s');
-      const id = rawId && rawId.trim() !== '' ? rawId : name.toLowerCase().replace(/\s+/g, '-');
-      if (!id) break;
-
-      const tiers = [];
-      for (let col = 4; col <= 13; col++) {
-        const active = (actRow[col] ?? '').toLowerCase().startsWith('s');
-        const rawPrice = priceRow[col] ?? '';
-        const price = parseInt(rawPrice.replace(/[^0-9]/g, ''), 10) || 0;
-        const qty = col - 3;
-        if (active && price > 0) tiers.push({ qty, price });
-      }
-
-      if (!tiers.length && priceRow[4]) {
-        const price = parseInt(priceRow[4].replace(/[^0-9]/g, ''), 10);
-        tiers.push({ qty: 1, price });
-      }
-
-      sheetProducts.push({ id, name, stock, tiers });
+    // Carrusel destacados
+    const wrap = document.querySelector('.csl-swiper .swiper-wrapper');
+    if (wrap) {
+      const feats = products.filter(p => p.is_featured)
+        .sort((a,b)=>(a.featured_order||0)-(b.featured_order||0));
+      wrap.innerHTML = feats.map(slideHTML).join('');
     }
 
-    sheetProducts.forEach(({ id, stock, tiers }) => {
-      PRICE_TIERS[id] = tiers;
-
-      const selectors = [
-        `.product-card[data-id="${id}"]`,
-        `.csl-slide[data-id="${id}"]`,
-        `.card[data-id="${id}"]`
-      ];
-      const cards = document.querySelectorAll(selectors.join(','));
-
-      cards.forEach(card => {
-        const priceOne = tiers.find(t => t.qty === 1);
-        if (priceOne) {
-          const formatted = fmt(priceOne.price);
-          const priceEl = card.querySelector('.card-price') || card.querySelector('.csl-price');
-          if (priceEl) priceEl.textContent = formatted;
-          card.dataset.price = priceOne.price;
-        }
-        if (!stock) {
-          card.classList.add('out-of-stock');
-          card.setAttribute('aria-disabled', 'true');
-          const outBtn = card.querySelector('.card-btn') || card.querySelector('.csl-rect');
-          if (outBtn) outBtn.textContent = 'SIN STOCK';
-        } else {
-          card.classList.remove('out-of-stock');
-          card.removeAttribute('aria-disabled');
-          const inBtn = card.querySelector('.card-btn') || card.querySelector('.csl-rect');
-          if (inBtn) inBtn.textContent = 'Ver más';
-        }
-      });
-    });
-
-    sheetProducts.forEach(({ name, tiers, stock }) => {
-      const priceOne = tiers.find(t => t.qty === 1);
-      if (priceOne) {
-        const heroName = HERO_NAME_MAP[name] || name;
-        const prod = PRODUCTS.find(p => p.name === heroName);
-        if (prod) {
-          prod.price = fmt(priceOne.price);
-          prod.rawPrice = priceOne.price;
-          HERO_STOCK[heroName] = stock;
-          if (DOM.productPrice && PRODUCTS[state.current] && PRODUCTS[state.current].name === heroName) {
-            DOM.productPrice.textContent = stock ? fmt(priceOne.price) : 'SIN STOCK';
-            DOM.productImg.dataset.price = priceOne.price;
-            setHeroAddToCartState(stock);
-          }
-        }
-      }
-    });
     document.body.classList.add('sheet-ready');
+    return PRODUCTS.length > 0;
   } catch (err) {
-    console.error('❗ No se pudo cargar la hoja de precios/stock:', err);
+    console.error('❗ No se pudo cargar el catálogo desde Supabase:', err);
+    document.body.classList.add('sheet-ready');
+    return false;
   }
 }
 
@@ -168,7 +147,7 @@ const FEATURES={
   'cargador-lightning':['Cable Lightning incluido','Adaptador de corriente','Compatible iPhone/iPad/AirPods','Carga rápida'],
   'cargador-tipo-c':['Cable USB-C incluido','Compatible iPhone 15+','iPad Pro y MacBook','Carga rápida 20W'],
   'cargador-samsung-45w':['Carga ultra rápida 45W','Compatible línea Galaxy','Cable USB-C incluido','Carga completa en ~1 hora'],
-};
+};            // fallback — loadCatalog() lo sobreescribe desde Supabase
 const PRODUCT_CONFIG={
   1:{fontSize:'22vw',productScale:1.1,productY:-15,blobYRatio:0.88,blobSpeed:0.030},
   2:{fontSize:'28vw',productScale:1.1,productY:-10,blobYRatio:0.88,blobSpeed:0.030},
@@ -854,9 +833,8 @@ const Carousel3D=(()=>{
 })();
 document.querySelectorAll('.porque-card').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('flipped')));
 document.addEventListener('DOMContentLoaded', async () => {
-  await syncSheetToConfig();
-
-  setInterval(syncSheetToConfig, 60000);
+  await loadCatalog();                          // hidrata desde Supabase si está; si no, queda el fallback
+  document.body.classList.add('sheet-ready');
 
   ProductNav.init();Cart.init();CartButton.init();MaskReveal.init();
   ProductsSection.init();NavScroll.init();ProductModal.init();Carousel3D.init();Checkout.init();
