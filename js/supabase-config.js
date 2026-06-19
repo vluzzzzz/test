@@ -12,8 +12,8 @@
  *  Si quedan vacíos o con los placeholders, la web sigue funcionando con su
  *  contenido hardcodeado (fallback) y el panel /admin avisa que falta config.
  * ========================================================================== */
-window.SUPABASE_URL = 'https://TU-PROYECTO.supabase.co';
-window.SUPABASE_ANON_KEY = 'TU_ANON_PUBLIC_KEY';
+window.SUPABASE_URL = 'https://sfcuiptbnsqvnzzraoee.supabase.co';
+window.SUPABASE_ANON_KEY = 'sb_publishable_8QvsZJPHOGKxfn0gxyIZGQ_06Gt_n-f';
 
 // ¿Está configurado de verdad (no son los placeholders)?
 window.SB_CONFIGURED = (function () {

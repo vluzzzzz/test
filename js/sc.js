@@ -1,4 +1,4 @@
-// sections.js — NavScroll, ProductsSection (grilla) y Carousel3D (destacados)
+// sc
 'use strict';
 const NavScroll=(()=>{function init(){const nav=document.querySelector('.nav');window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>40),{passive:true});}return{init};})();
 const ProductsSection=(()=>{
