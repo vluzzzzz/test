@@ -163,11 +163,11 @@ const GALLERY={};
 // Variantes de color — SOLO los slugs listados acá muestran colores (dots + selector + validación).
 const COLOR_VARIANTS={
   'airpods-max':[
-    {name:'Midnight', hex:'#1A1A1A', img:'images/max-negros.webp',  swatch:'images/black.png'},
+    {name:'Midnight', hex:'#1A1A1A', img:'images/max-negros.webp',  swatch:'images/black.webp'},
     {name:'Starlight',hex:'#F5F0E8', img:'images/max-blanco.webp',  swatch:'images/mstarlight.webp'},
-    {name:'Orange',   hex:'#F26513', img:'images/max-naranja.webp', swatch:'images/orange.png'},
+    {name:'Orange',   hex:'#F26513', img:'images/max-naranja.webp', swatch:'images/orange.webp'},
     {name:'Purple',   hex:'#9B59B6', img:'images/max-morado.webp',  swatch:'images/purple.webp'},
-    {name:'Blue',     hex:'#3498DB', img:'images/max-azul.webp',    swatch:'images/blue.png'},
+    {name:'Blue',     hex:'#3498DB', img:'images/max-azul.webp',    swatch:'images/blue.webp'},
   ],
 };
 const PRODUCT_CONFIG={
