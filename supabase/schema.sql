@@ -165,7 +165,7 @@ values
 
   ('airpods-max','Max Magnéticos','accesorios',
    'Accesorios magnéticos premium compatibles con MagSafe. Fijación perfecta y carga inalámbrica optimizada.',
-   'images/max-magneticos.webp',0.75,8,
+   'images/max-negros.webp',0.75,8,
    array['Compatibles con MagSafe','Fijación magnética perfecta','Carga inalámbrica optimizada','Múltiples colores'],
    true,'AirPods Max','AIRPODS MAX','images/airpodsmax.webp',1.4,50,-20,3,
    true,'Más vendido','AirPods Max','images/airpodsmax.webp',1),
