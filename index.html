@@ -184,6 +184,7 @@
   </div>
 
   <div class="swiper csl-swiper">
+    <!-- Fallback hardcodeado: si Supabase responde, loadCatalog() reemplaza estos slides -->
     <div class="swiper-wrapper">
 
       <div class="swiper-slide csl-slide" data-id="airpods-max" data-name="AirPods Max" data-price="26990" data-raw="26990" data-img-scale="0.75" data-desc="Accesorios magnéticos premium compatibles con MagSafe.">
@@ -245,6 +246,7 @@
     <h2 class="productos-titulo">Productos</h2>
     <div class="productos-badge">Desde 3 unidades combinables</div>
   </div>
+  <!-- Fallback hardcodeado: si Supabase responde, loadCatalog() reemplaza estas tarjetas -->
   <div class="productos-grid" id="productosGrid">
 
     <div class="product-card" data-id="apple-watch-ultra-3" data-name="Apple Watch Ultra 3" data-price="29990" data-raw="29990" data-img-scale="0.75" data-desc="El Apple Watch más resistente. Titanio de grado aeroespacial, pantalla Always-On de 49mm y hasta 60 horas de batería.">
@@ -633,6 +635,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

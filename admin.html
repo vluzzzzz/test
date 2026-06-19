@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin · Tienda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- ── SUPABASE NO CONFIGURADO ───────────────────────── -->
+  <div id="notConfigured" class="login-wrap hidden">
+    <div class="login-box" style="text-align:center">
+      <h1>Falta configurar</h1>
+      <p>Pegá tu <code>SUPABASE_URL</code> y <code>SUPABASE_ANON_KEY</code> en
+         <code>js/supabase-config.js</code> y recargá esta página.</p>
+    </div>
+  </div>
+
+  <!-- ── LOGIN ─────────────────────────────────────────── -->
+  <div id="login" class="login-wrap">
+    <form class="login-box" id="loginForm" autocomplete="on">
+      <h1>Admin</h1>
+      <p>Ingresá con tu cuenta para administrar el catálogo</p>
+      <label class="fld"><span>Email</span>
+        <input type="email" id="loginEmail" required autocomplete="username">
+      </label>
+      <label class="fld"><span>Contraseña</span>
+        <input type="password" id="loginPass" required autocomplete="current-password">
+      </label>
+      <button class="btn btn-dark" type="submit" id="loginBtn">Entrar</button>
+      <div class="login-err" id="loginErr"></div>
+    </form>
+  </div>
+
+  <!-- ── APP ───────────────────────────────────────────── -->
+  <div id="app" class="hidden">
+    <header class="adm-header">
+      <div class="adm-logo">TIENDA <span>· ADMIN</span></div>
+      <button class="btn btn-ghost" id="logoutBtn">Cerrar sesión</button>
+    </header>
+
+    <div class="wrap">
+      <div class="tabs">
+        <button class="tab active" data-tab="catalogo">Catálogo</button>
+      </div>
+
+      <section id="tab-catalogo">
+        <p class="title-kicker">Tecnología fácil</p>
+        <h1 class="title-big">Catálogo</h1>
+
+        <!-- Nuevo producto -->
+        <div class="card">
+          <h2>Nuevo producto</h2>
+          <p class="hint">Se agrega al final del catálogo en la web, y arriba acá para que lo edites enseguida.</p>
+          <div class="img-row">
+            <input type="text" id="newName" placeholder="Ej: AirPods Pro 2">
+            <button class="btn btn-dark" id="createBtn" style="flex:none">Crear producto</button>
+          </div>
+        </div>
+
+        <!-- Lista de productos (render dinámico) -->
+        <div id="list"><div class="empty">Cargando productos…</div></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
