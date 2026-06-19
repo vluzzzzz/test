@@ -60,7 +60,7 @@ function cardHTML(p){
   const btn = p.in_stock === false ? 'SIN STOCK' : 'Ver más';
   return `<div class="product-card${out}" data-id="${escAttr(p.slug)}" data-name="${escAttr(p.name)}" data-price="${p1}" data-raw="${p1}" data-img-scale="${p.image_scale ?? 0.75}" data-desc="${escAttr(p.description)}"${dis}>
       <div class="card-img-wrap"><img src="${escAttr(p.image)}" alt="${escAttr(p.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
-      <div class="card-info"><p class="card-name">${escAttr(p.name)}</p><p class="card-price">${fmt(p1)} <span class="card-unit">c/u</span></p>${colorDots(p.slug)}<button class="card-btn">${btn}</button></div>
+      <div class="card-info"><p class="card-name">${escAttr(p.name)}</p><div class="card-price-row"><p class="card-price">${fmt(p1)} <span class="card-unit">c/u</span></p>${colorDots(p.slug)}</div><button class="card-btn">${btn}</button></div>
     </div>`;
 }
 
