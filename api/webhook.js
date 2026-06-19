@@ -1,4 +1,4 @@
-const { MercadoPagoConfig, Payment } = require('mercadopago');
+const { MercadoPagoConfig, Payment, MerchantOrder } = require('mercadopago');
 const { Resend } = require('resend');
 const crypto = require('crypto');
 
@@ -88,42 +88,62 @@ module.exports = async (req, res) => {
       env: { mp: !!process.env.MERCADO_PAGO_ACCESS_TOKEN, resend: !!process.env.RESEND_API_KEY, to: process.env.NOTIFICATION_EMAIL },
     });
 
-    // Solo procesamos notificaciones de pago con id.
-    if (!dataId || !(type === 'payment' || type === undefined)) {
-      console.log('webhook: no es notificación de pago con id — ignorado', { type, dataId });
+    // id inválido (ej. pruebas con id 0) → ignorar.
+    if (!dataId || Number(dataId) <= 0) {
+      console.log('webhook: sin id válido — ignorado', { type, dataId });
       return res.status(200).end();
     }
 
-    // Firma de MP: la registramos pero NO bloqueamos por ella (las IPN no la
-    // traen). La seguridad real la da consultar el pago por su id contra MP.
+    const isPayment = type === 'payment' || type === undefined;
+    const isOrder = type === 'merchant_order';
+    if (!isPayment && !isOrder) {
+      console.log('webhook: tipo no manejado — ignorado', { type });
+      return res.status(200).end();
+    }
+
+    // Firma de MP: se registra pero NO bloquea (las IPN no la traen). La
+    // seguridad la da consultar el recurso por su id contra MP.
     if (validSignature(req, dataId) === false) {
       console.warn('webhook: firma ausente o no válida (se procesa igual)');
     }
 
-    // Flujo real de Mercado Pago: consultar el pago por su id para obtener
-    // external_reference (cliente + items + total) y el estado real.
     const client = new MercadoPagoConfig({
       accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
       options: { timeout: 8000 },
     });
-    const info = await new Payment(client).get({ id: dataId });
 
-    const paymentStatus = info?.status || 'unknown';
-    const paymentId = String(info?.id || dataId);
-    console.log('webhook: pago', paymentId, 'status', paymentStatus, 'externalRef?', !!info?.external_reference, 'len', (info?.external_reference || '').length);
+    let extRef = null;
+    let paymentStatus = 'unknown';
+    let paymentId = String(dataId);
+
+    if (isOrder) {
+      // Checkout Pro suele notificar como merchant_order: trae los pagos + external_reference.
+      const mo = await new MerchantOrder(client).get({ merchantOrderId: dataId });
+      extRef = mo?.external_reference || null;
+      const approved = (mo?.payments || []).find(p => p.status === 'approved');
+      paymentStatus = approved ? 'approved' : 'pending';
+      if (approved) paymentId = String(approved.id);
+      console.log('webhook: merchant_order', dataId, 'pagos', (mo?.payments || []).map(p => p.status), 'extRef?', !!extRef);
+    } else {
+      const info = await new Payment(client).get({ id: dataId });
+      extRef = info?.external_reference || null;
+      paymentStatus = info?.status || 'unknown';
+      paymentId = String(info?.id || dataId);
+      console.log('webhook: pago', paymentId, 'status', paymentStatus, 'extRef?', !!extRef, 'len', (extRef || '').length);
+    }
 
     if (paymentStatus !== 'approved') {
-      console.log('webhook: pago', paymentId, 'estado', paymentStatus, '— no se envía correo');
+      console.log('webhook:', paymentId, 'no aprobado:', paymentStatus, '— no se envía correo');
       return res.status(200).end();
     }
 
     let paymentData = null;
-    if (info?.external_reference) {
-      try { paymentData = JSON.parse(info.external_reference); }
-      catch (e) { console.warn('webhook: external_reference no es JSON válido (¿truncado?):', info.external_reference); paymentData = null; }
+    if (extRef) {
+      try { paymentData = JSON.parse(extRef); }
+      catch (e) { console.warn('webhook: external_reference no es JSON válido (¿truncado?):', extRef); paymentData = null; }
     }
     if (!paymentData) {
-      console.log('webhook: pago aprobado sin external_reference utilizable, skipping email', { paymentId });
+      console.log('webhook: aprobado sin external_reference utilizable, skipping email', { paymentId });
       return res.status(200).end();
     }
 
