@@ -14,7 +14,14 @@ function setHeroAddToCartState(inStock){
 
 const CartButton=(()=>{
   let timer=null;
-  function trigger(){const btn=DOM.addToCart;if(btn.classList.contains('added'))return;Cart.addItem(PRODUCTS[state.current]);btn.classList.add('added');const r=document.createElement('span');r.style.cssText='position:absolute;border-radius:50%;width:10px;height:10px;background:rgba(0,0,0,.08);transform:scale(0);animation:rippleOut .5s ease-out forwards;top:50%;left:50%;margin:-5px 0 0 -5px;pointer-events:none;';btn.appendChild(r);setTimeout(()=>r.remove(),600);clearTimeout(timer);timer=setTimeout(()=>btn.classList.remove('added'),2200);}
+  function trigger(){const btn=DOM.addToCart;if(btn.classList.contains('added'))return;
+    const prod=PRODUCTS[state.current];
+    // Si el producto del hero tiene colores, abrir el detalle para elegir (no agregar suelto).
+    if(prod&&typeof COLOR_VARIANTS!=='undefined'&&COLOR_VARIANTS[prod.key]&&typeof ProductModal!=='undefined'){
+      const card=document.querySelector(`.product-card[data-id="${prod.key}"]`);
+      if(card){card.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>ProductModal.open(card),320);return;}
+    }
+    Cart.addItem(prod);btn.classList.add('added');const r=document.createElement('span');r.style.cssText='position:absolute;border-radius:50%;width:10px;height:10px;background:rgba(0,0,0,.08);transform:scale(0);animation:rippleOut .5s ease-out forwards;top:50%;left:50%;margin:-5px 0 0 -5px;pointer-events:none;';btn.appendChild(r);setTimeout(()=>r.remove(),600);clearTimeout(timer);timer=setTimeout(()=>btn.classList.remove('added'),2200);}
   function init(){DOM.addToCart.addEventListener('click',trigger);const s=document.createElement('style');s.textContent='@keyframes rippleOut{to{transform:scale(28);opacity:0}}';document.head.appendChild(s);}
   return{init};
 })();
