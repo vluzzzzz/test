@@ -2,7 +2,7 @@
 'use strict';
 const ProductModal=(()=>{
   let isOpen=false,originCard=null,originRect=null,qty=1,tiers=[],currentProduct=null,tiersOpen=false;
-  let imgIndex=0,imgList=[],isTemp=false,openingImage='',isAnimImg=false;
+  let imgIndex=0,imgList=[],isTemp=false,openingImage='',isAnimImg=false,_colorPicked=false,_awaitingColorConfirm=false;
   const ppage=document.getElementById('ppage'),overlay=document.getElementById('ppageOverlay'),backBtn=document.getElementById('ppageBack');
   const fmt=n=>'$'+Number(n).toLocaleString('es-CL');
   const getCardImg=c=>c?.querySelector('.card-img-wrap img')||c?.querySelector('.csl-img img')||null;
@@ -23,20 +23,30 @@ const ProductModal=(()=>{
   const FILE_PREFIX={'airpods-4':'airpods-4ta-generacion','airpods-3':'airpods-3ra-generacion','airpods-max':'max-magneticos','cargador-lightning':'cargador-lightning-completo','cargador-tipo-c':'cargador-tipo-c-completo'};
   const buildImgList=(src,key)=>{const s=slug(key),fk=FILE_PREFIX[s]||s,v1=PRODUCT_IMAGES[s]||src;return TWO.includes(s)?[v1,`images/${fk}-v2.webp`]:[v1,`images/${fk}-v2.webp`,`images/${fk}-v3.webp`];};
   const IMG_SCALES={'apple-watch-ultra-3':[1,1,1],'apple-watch-serie-10':[1,1,.75],'apple-watch-black-ultra-2':[1,.75,.75],'airpods-4':[1,1,1.3],'airpods-pro-2':[1,1,1],'airpods-3':[1,1,1],'bateria-magsafe':[1,1,1],'airpods-max':[1,1,1],'cargador-lightning':[1,1.4,1],'cargador-tipo-c':[1,1,1],'cargador-samsung-45w':[1,1,1]};
+  const colorVars=k=>(typeof COLOR_VARIANTS!=='undefined')?COLOR_VARIANTS[k]:null;
+  const _isColorNav=()=>!!(currentProduct&&colorVars(currentProduct.key));
 
-  function renderDots(){const w=document.getElementById('ppageImgDots');if(!w)return;w.innerHTML=imgList.map((_,i)=>`<div class="ppage-img-dot${i===imgIndex?' active':''}"></div>`).join('');w.querySelectorAll('.ppage-img-dot').forEach((d,i)=>d.addEventListener('click',()=>goToImg(i)));}
-  function updateArrow(){const b=document.getElementById('ppageImgNext');if(b)b.classList.toggle('hidden',isTemp||imgIndex>=imgList.length-1);}
+  function renderDots(){const w=document.getElementById('ppageImgDots');if(!w)return;if(_isColorNav()){w.innerHTML='';return;}w.innerHTML=imgList.map((_,i)=>`<div class="ppage-img-dot${i===imgIndex?' active':''}"></div>`).join('');w.querySelectorAll('.ppage-img-dot').forEach((d,i)=>d.addEventListener('click',()=>goToImg(i)));}
+  function updateArrow(){const b=document.getElementById('ppageImgNext');if(b)b.classList.toggle('hidden',_isColorNav()||isTemp||imgIndex>=imgList.length-1);}
   function renderTempThumbs(){const w=document.getElementById('ppageThumbs');if(!w)return;w.innerHTML='';imgList.forEach((src,i)=>{const t=document.createElement('div');t.className='ppage-thumb';t.dataset.index=i;t.innerHTML=`<img src="${src}" alt="">`;gsap.set(t,{opacity:0,y:20,scale:.8});w.appendChild(t);gsap.to(t,{opacity:1,y:0,scale:1,duration:.35,delay:i*.06,ease:'back.out(1.5)'});t.addEventListener('click',()=>activateFromTemp(i));});}
   function activateFromTemp(ni){isTemp=false;const ie=document.getElementById('ppageImg'),iw=document.getElementById('ppageImgWrap'),w=document.getElementById('ppageThumbs');w.innerHTML='';for(let i=0;i<ni;i++)addThumb(imgList[i],i);imgIndex=ni;gsap.to(iw,{opacity:0,scale:.88,duration:.25,ease:'power3.in',onComplete:()=>{                    ie.src=imgList[imgIndex];const s=(IMG_SCALES[currentProduct.key]??[1,1,1])[imgIndex]??1;document.getElementById('ppageImgWrap')?.style.setProperty('--ppage-img-scale',s);gsap.fromTo(iw,{opacity:0,scale:.88},{opacity:1,scale:1,duration:.4,ease:'power3.out'});}});renderDots();updateArrow();}
   function addThumb(src,fi){const w=document.getElementById('ppageThumbs');if(!w||w.querySelector(`[data-index="${fi}"]`))return;const t=document.createElement('div');t.className='ppage-thumb';t.dataset.index=fi;t.innerHTML=`<img src="${src}" alt="">`;gsap.set(t,{opacity:0,y:20,scale:.8});w.appendChild(t);gsap.to(t,{opacity:1,y:0,scale:1,duration:.35,ease:'back.out(1.5)'});t.addEventListener('click',()=>goToImg(fi));}
   function goToImg(ni){
+    if(_isColorNav())return;
     if(ni===imgIndex||isTemp||isAnimImg||ni<0||ni>=imgList.length)return;
     const ie=document.getElementById('ppageImg'),iw=document.getElementById('ppageImgWrap'),dir=ni>imgIndex?1:-1,pi=ie.src,pI=imgIndex,pre=new Image();
     pre.src=imgList[ni];
     function go(){isAnimImg=true;if(dir>0)addThumb(pi,pI);else{const w=document.getElementById('ppageThumbs');if(w)w.querySelectorAll('.ppage-thumb').forEach(t=>{if(Number(t.dataset.index)>=ni)gsap.to(t,{opacity:0,y:20,scale:.8,duration:.25,ease:'power2.in',onComplete:()=>t.remove()});});}imgIndex=ni;gsap.to(iw,{x:dir>0?-60:60,opacity:0,scale:.88,duration:.3,ease:'power3.in',onComplete:()=>{ie.src=imgList[imgIndex];const s=(IMG_SCALES[currentProduct?.key]??[1,1,1])[imgIndex]??1;document.getElementById('ppageImgWrap')?.style.setProperty('--ppage-img-scale',s);gsap.fromTo(iw,{x:dir>0?80:-80,opacity:0,scale:.88},{x:0,opacity:1,scale:1,duration:.45,ease:'power3.out',onComplete:()=>{isAnimImg=false;}});}});renderDots();updateArrow();}
     if(pre.complete)go();else{pre.onload=go;pre.onerror=go;}
   }
-  function resetCarousel(src,name,key){imgIndex=0;const g=(typeof GALLERY!=='undefined')?GALLERY[key]:null;imgList=(g&&g.length>1)?g.slice():buildImgList(src,key||name);const w=document.getElementById('ppageThumbs');if(w)w.innerHTML='';document.getElementById('ppageImgWrap')?.style.setProperty('--ppage-img-scale','1');renderDots();updateArrow();}
+  function resetCarousel(src,name,key){imgIndex=0;const cv=colorVars(key);if(cv){imgList=cv.map(v=>v.img);}else{const g=(typeof GALLERY!=='undefined')?GALLERY[key]:null;imgList=(g&&g.length>1)?g.slice():buildImgList(src,key||name);}const w=document.getElementById('ppageThumbs');if(w)w.innerHTML='';document.getElementById('ppageImgWrap')?.style.setProperty('--ppage-img-scale','1');renderDots();updateArrow();}
+  // ── Variantes de color ─────────────────────────────────────
+  function renderColors(key){const wrap=document.getElementById('ppageColors'),row=document.getElementById('ppageColorsRow');const cv=colorVars(key);if(!wrap||!row)return;if(!cv){wrap.style.display='none';return;}wrap.style.display='';row.innerHTML=cv.map((v,i)=>`<button class="ppage-color-swatch${i===imgIndex?' active':''}" data-index="${i}" title="${v.name}" aria-label="${v.name}" style="${v.swatch?'':'background:'+v.hex}">${v.swatch?`<img src="${v.swatch}" alt="${v.name}">`:''}</button>`).join('');row.querySelectorAll('.ppage-color-swatch').forEach(s=>s.addEventListener('click',()=>{_colorPicked=true;_awaitingColorConfirm=false;document.getElementById('ppageColorHint')?.classList.remove('show');row.classList.remove('shake');goToImgDirectly(Number(s.dataset.index));}));const label=document.getElementById('ppageColorName');if(label)label.textContent=(imgIndex>=0&&cv[imgIndex])?cv[imgIndex].name:'';}
+  function goToImgDirectly(ni){if(ni<0||ni>=imgList.length)return;imgIndex=ni;const ie=document.getElementById('ppageImg');if(ie){ie.src=imgList[ni];gsap.fromTo(ie,{opacity:.3},{opacity:1,duration:.25,ease:'power2.out'});}document.getElementById('ppageImgWrap')?.style.setProperty('--ppage-img-scale','1');if(currentProduct)currentProduct.image=imgList[ni];_updateColorActive();const b=document.getElementById('ppageImgNext');if(b)b.classList.add('hidden');}
+  function _updateColorActive(){const row=document.getElementById('ppageColorsRow');if(!row)return;row.querySelectorAll('.ppage-color-swatch').forEach((s,i)=>s.classList.toggle('active',i===imgIndex));const label=document.getElementById('ppageColorName'),cv=colorVars(currentProduct&&currentProduct.key)||[];if(label&&cv[imgIndex])label.textContent=cv[imgIndex].name;}
+  function _needsColor(){return !!(currentProduct&&colorVars(currentProduct.key)&&!_colorPicked);}
+  function _shakeColor(){_awaitingColorConfirm=true;const row=document.getElementById('ppageColorsRow'),hint=document.getElementById('ppageColorHint');if(row){row.classList.remove('shake');void row.offsetWidth;row.classList.add('shake');}if(hint)hint.classList.add('show');document.getElementById('ppageColors')?.scrollIntoView({behavior:'smooth',block:'center'});}
+  function cartProduct(){const cv=colorVars(currentProduct.key);if(cv&&imgIndex>=0&&cv[imgIndex]){const v=cv[imgIndex];return{...currentProduct,id:currentProduct.id+'::'+imgIndex,image:v.img,colorName:v.name};}return{...currentProduct};}
   const priceForQty=q=>{let u=tiers[0]?.price??0;for(const t of tiers)if(q>=t.qty)u=t.price;return u;};
   function renderTiers(){
     const table=document.getElementById('ppagePricesTable'),base=tiers[0]?.price??1;
@@ -73,7 +83,12 @@ const ProductModal=(()=>{
     document.getElementById('ppageTiersList').style.height='0';
     renderTiers();updateTotal();renderFeatures(key);
     resetCarousel(currentProduct.image,card.dataset.name,key);
-    if(card.classList.contains('csl-slide')){isTemp=true;updateArrow();renderTempThumbs();}
+    _colorPicked=false;_awaitingColorConfirm=false;
+    if(colorVars(key))imgIndex=-1;            // color: ninguno elegido al abrir
+    renderColors(key);
+    document.getElementById('ppageColorHint')?.classList.remove('show');
+    document.getElementById('ppageColorsRow')?.classList.remove('shake');
+    if(card.classList.contains('csl-slide')&&!colorVars(key)){isTemp=true;updateArrow();renderTempThumbs();}
   }
 
   function open(card){
@@ -273,9 +288,9 @@ const ProductModal=(()=>{
     }
     document.getElementById('ppageQtyMinus').addEventListener('click',()=>{if(qty>1){qty--;document.getElementById('ppageQtyNum').textContent=qty;updateTotal();}});
     document.getElementById('ppageQtyPlus').addEventListener('click',()=>{qty++;document.getElementById('ppageQtyNum').textContent=qty;updateTotal();});
-    document.getElementById('ppageWaBtn')?.addEventListener('click',()=>{if(!currentProduct)return;const u=priceForQty(qty),t=u*qty;const msg=[`*\u00a1Hola!* Me interesa este producto:`,'',`\u25b8 ${qty}x ${currentProduct.name}`,`  Precio: ${fmt(u)} c/u`,`  Total: *${fmt(t)}*`,'','\u00bfTienen stock disponible?'].join('\n');window.open(`https://wa.me/56942348587?text=${encodeURIComponent(msg)}`,'_blank');});
-    document.getElementById('ppageCartBtn').addEventListener('click',()=>{if(!currentProduct)return;const p={...currentProduct};for(let i=0;i<qty;i++)Cart.addItem(p);const b=document.getElementById('ppageCartBtn');b.innerHTML='<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';setTimeout(()=>{b.innerHTML='<svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.2 14h9.5c.8 0 1.5-.5 1.7-1.2l3-7H6.2L5.3 3H1v2h3l3.6 7.6-1.3 2.4c-.1.2-.2.5-.2.8 0 1.1.9 2 2 2h12v-2H8.4c-.1 0-.2-.1-.2-.2l.03-.12L9.1 14z"/></svg>';},1800);});
-    document.getElementById('ppageMpBtn')?.addEventListener('click',()=>{if(!currentProduct)return;const p={...currentProduct};for(let i=0;i<qty;i++)Cart.addItem(p);Checkout.open();});
+    document.getElementById('ppageWaBtn')?.addEventListener('click',()=>{if(!currentProduct)return;if(_needsColor()){_shakeColor();return;}const u=priceForQty(qty),t=u*qty;const cv=colorVars(currentProduct.key),cn=(cv&&imgIndex>=0&&cv[imgIndex])?cv[imgIndex].name:'';const msg=[`*\u00a1Hola!* Me interesa este producto:`,'',`\u25b8 ${qty}x ${currentProduct.name}${cn?` (${cn})`:''}`,`  Precio: ${fmt(u)} c/u`,`  Total: *${fmt(t)}*`,'','\u00bfTienen stock disponible?'].join('\n');window.open(`https://wa.me/56942348587?text=${encodeURIComponent(msg)}`,'_blank');});
+    document.getElementById('ppageCartBtn').addEventListener('click',()=>{if(!currentProduct)return;if(_needsColor()){_shakeColor();return;}const p=cartProduct();for(let i=0;i<qty;i++)Cart.addItem(p);const b=document.getElementById('ppageCartBtn');b.innerHTML='<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';setTimeout(()=>{b.innerHTML='<svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.2 14h9.5c.8 0 1.5-.5 1.7-1.2l3-7H6.2L5.3 3H1v2h3l3.6 7.6-1.3 2.4c-.1.2-.2.5-.2.8 0 1.1.9 2 2 2h12v-2H8.4c-.1 0-.2-.1-.2-.2l.03-.12L9.1 14z"/></svg>';},1800);});
+    document.getElementById('ppageMpBtn')?.addEventListener('click',()=>{if(!currentProduct)return;if(_needsColor()){_shakeColor();return;}const p=cartProduct();for(let i=0;i<qty;i++)Cart.addItem(p);Checkout.open();});
     ['ppage-features','ppage-delivery'].forEach(id=>document.getElementById(id+'-header')?.addEventListener('click',()=>openAccordion(id)));
     document.querySelectorAll('.card-btn').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();open(btn.closest('[data-name]'));}));
   }

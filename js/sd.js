@@ -42,6 +42,12 @@ function slugify(str) {
 // ── Catálogo desde Supabase + render dinámico ──────────────────────────────
 function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
 
+function colorDots(slug){
+  const cv=(typeof COLOR_VARIANTS!=='undefined')?COLOR_VARIANTS[slug]:null;
+  if(!cv)return '';
+  return '<div class="card-colors">'+cv.map(v=>`<span class="card-color-dot">${v.swatch?`<img src="${escAttr(v.swatch)}" alt="${escAttr(v.name)}">`:`<span style="display:block;width:100%;height:100%;border-radius:50%;background:${v.hex}"></span>`}</span>`).join('')+'</div>';
+}
+
 function tierOne(slug){
   const t = PRICE_TIERS[slug] || [];
   return (t.find(x => x.qty === 1) || t[0] || {}).price || 0;
@@ -54,7 +60,7 @@ function cardHTML(p){
   const btn = p.in_stock === false ? 'SIN STOCK' : 'Ver más';
   return `<div class="product-card${out}" data-id="${escAttr(p.slug)}" data-name="${escAttr(p.name)}" data-price="${p1}" data-raw="${p1}" data-img-scale="${p.image_scale ?? 0.75}" data-desc="${escAttr(p.description)}"${dis}>
       <div class="card-img-wrap"><img src="${escAttr(p.image)}" alt="${escAttr(p.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg class="card-img-placeholder" style="display:none" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
-      <div class="card-info"><p class="card-name">${escAttr(p.name)}</p><p class="card-price">${fmt(p1)} <span class="card-unit">c/u</span></p><button class="card-btn">${btn}</button></div>
+      <div class="card-info"><p class="card-name">${escAttr(p.name)}</p><p class="card-price">${fmt(p1)} <span class="card-unit">c/u</span></p>${colorDots(p.slug)}<button class="card-btn">${btn}</button></div>
     </div>`;
 }
 
@@ -154,6 +160,16 @@ const FEATURES={
 };            // fallback — loadCatalog() lo sobreescribe desde Supabase
 // { slug: [imgPrincipal, ...secundarias] } — desde Supabase (vacío = usa fallback hardcodeado)
 const GALLERY={};
+// Variantes de color — SOLO los slugs listados acá muestran colores (dots + selector + validación).
+const COLOR_VARIANTS={
+  'airpods-max':[
+    {name:'Midnight', hex:'#1A1A1A', img:'images/max-negros.webp',  swatch:'images/black.png'},
+    {name:'Starlight',hex:'#F5F0E8', img:'images/max-blanco.webp',  swatch:'images/mstarlight.webp'},
+    {name:'Orange',   hex:'#F26513', img:'images/max-naranja.webp', swatch:'images/orange.png'},
+    {name:'Purple',   hex:'#9B59B6', img:'images/max-morado.webp',  swatch:'images/purple.webp'},
+    {name:'Blue',     hex:'#3498DB', img:'images/max-azul.webp',    swatch:'images/blue.png'},
+  ],
+};
 const PRODUCT_CONFIG={
   1:{fontSize:'22vw',productScale:1.1,productY:-15,blobYRatio:0.88,blobSpeed:0.030},
   2:{fontSize:'28vw',productScale:1.1,productY:-10,blobYRatio:0.88,blobSpeed:0.030},
