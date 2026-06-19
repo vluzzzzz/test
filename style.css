@@ -281,23 +281,23 @@ body:not(.sheet-ready) .csl-price {
 .swiper-slide-shadow,.swiper-slide-shadow-left,.swiper-slide-shadow-right,.swiper-slide-shadow-top,.swiper-slide-shadow-bottom{display:none!important;opacity:0!important}
 
 
-.out-of-stock {
-  opacity: .6;
-  filter: grayscale(.35);
+/* ══ SIN STOCK: imagen en blanco y negro + cartel diagonal, hover-zoom intacto ══ */
+.out-of-stock{cursor:default}
+.out-of-stock .card-img-wrap img,.out-of-stock .csl-img img{filter:grayscale(1)}
+.out-of-stock .csl-img{position:relative}
+.out-of-stock .card-name,.out-of-stock .card-price,.out-of-stock .csl-name,.out-of-stock .csl-price{color:#9a9a9f}
+.out-of-stock .card-btn,.out-of-stock .csl-rect{
+  pointer-events:none;background:#b9b9be!important;color:#fff!important;
+  border-color:#b9b9be!important;box-shadow:none!important;background-image:none!important;
 }
-
-.out-of-stock .card-btn {
-  pointer-events: none;
-}
-
-.out-of-stock .csl-rect {
-  pointer-events: none;
-}
-
-.out-of-stock.csl-slide:hover .csl-rect {
-  pointer-events: none;
-  background: var(--white) !important;
-  color: var(--black) !important;
+.oos-tag{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) rotate(-16deg);
+  background:rgba(28,28,30,.92);color:#fff;
+  font-family:'DM Sans',system-ui,sans-serif;font-weight:800;letter-spacing:.12em;
+  font-size:15px;text-transform:uppercase;white-space:nowrap;
+  padding:8px 22px;border-radius:9px;pointer-events:none;z-index:4;
+  box-shadow:0 10px 24px rgba(0,0,0,.32);
 }
 
    
